@@ -106,6 +106,32 @@ document.addEventListener('click',()=>{
 const msgs=["今天辛苦了喝杯水休息一下 ☕","你已经很棒了别给自己太大压力 ✨","工作只是生活的一部分你才是主角 🌸","起来伸个懒腰 🐱","偷偷告诉你今天会有好事发生 🌈","没有什么是一顿好吃的解决不了的 🍜","你的努力时间看得见 💪","今天的你也是满分选手 🥇","摸鱼三分钟效率翻一倍 🐟","打工人打工魂打完工再去浪 🌊","全世界都在催你长大我在催你早睡 🌙","你是人间四月天 ☀️","可爱的人连加班都是可爱的 🎀","下班后的快乐在等你了 🍻","好运正在派送中请保持心情通畅 📦","追光的人自己也会身披光芒 ✨","白天有说有笑晚上睡个好觉 💤","今天不想上班明天也不想想 🤪"]
 const treats=['🍖','🍗','🍩','🧀','🍎','🥩','🍰','🧁']
 const ach={10:{icon:'🌟',msg:'柴犬之友！送你一朵小花'},25:{icon:'🏆',msg:'狗狗达人！柴犬想跟你回家了'},50:{icon:'👑',msg:'传说级铲屎官！'}}
+let rapidTaps=0,rapidTimer=null
+
+// 🔮 快速连戳3下触发占卜
+function checkFortune(){
+  rapidTaps++
+  clearTimeout(rapidTimer)
+  rapidTimer=setTimeout(()=>{rapidTaps=0},800)
+  if(rapidTaps>=3){
+    rapidTaps=0
+    const fortunes=[
+      '🔮 今日宜：摸鱼、吃好吃的、被人喜欢',
+      '🌟 幸运色：粉色 | 幸运数字：你生日的那个',
+      '🍀 今天会有意外惊喜，注意查收',
+      '💫 有人在偷偷想你，想了三次',
+      '🎯 近期运势：升职加薪桃花旺',
+      '🌈 今天做任何决定都是对的',
+      '🦋 会收到一条让人开心的消息',
+      '💎 你的努力很快就会有回报了',
+      '🌸 今天的你比昨天更可爱一点点',
+      '🔥 宜表白，宜撒娇，宜收礼物',
+    ]
+    const f=fortunes[Math.floor(Math.random()*fortunes.length)]
+    showModal('🔮','柴犬占卜\n\n'+f)
+    spawnConfetti();spawnHearts(10);playHappy()
+  }
+}
 
 function playBark(){
   if(!state.music)return
@@ -141,6 +167,8 @@ function petDog(e){
   if(!audioCtx){audioCtx=new(window.AudioContext||window.webkitAudioContext)()}
   if(audioCtx.state==='suspended')audioCtx.resume()
   if(state.gameActive)return // 游戏模式，不触发狗
+  
+  checkFortune() // 快速连戳触发占卜
   
   const dog=document.getElementById('dog')
   const anims=['bounce','shake','happy']
@@ -390,6 +418,10 @@ function toast(msg){const t=document.getElementById('bubble');t.textContent=msg;
 
 setInterval(()=>{state.happiness=Math.max(20,state.happiness-.1);updateStats()},10000)
 updateStats()
+
+// 🌙 晚上10点后自动切换夜景
+const h=new Date().getHours()
+if(h>=22||h<6)document.getElementById('body').className='night'
 </script>
 </body>
 </html>
