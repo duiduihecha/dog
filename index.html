@@ -325,13 +325,42 @@ const UI = {
     UI.updateAccessories()
   },
   updateAccessories(){
-    const items = Cat.wardrobe.items, eq = Store.get('equipped')
-    document.getElementById('accHat').style.display = eq.hat?'block':'none'
-    document.getElementById('accHat').textContent = items.find(i=>i.id===eq.hat)?.emoji||''
-    document.getElementById('accGlasses').style.display = eq.glasses?'block':'none'
-    document.getElementById('accGlasses').textContent = '🕶'
-    document.getElementById('accBow').style.display = eq.bow?'block':'none'
-    document.getElementById('accBow').textContent = '🎀'
+    const breed=Cat.dog.getBreed(), eq=Store.get('equipped'), items=Cat.wardrobe.items
+    const baseSize=36 // CSS font-size base for accessories
+    
+    // Hat - uses head anchor
+    const hatEl=document.getElementById('accHat')
+    const hatItem=items.find(i=>i.id===eq.hat)
+    if(eq.hat&&hatItem){
+      hatEl.style.display='block'
+      hatEl.textContent=hatItem.emoji
+      const scale=breed.headSize
+      hatEl.style.top=breed.anchor.top+'%'
+      hatEl.style.left=breed.anchor.left+'%'
+      hatEl.style.fontSize=(baseSize*scale)+'px'
+    }else{hatEl.style.display='none'}
+    
+    // Glasses - centered slightly below anchor
+    const gEl=document.getElementById('accGlasses')
+    if(eq.glasses){
+      gEl.style.display='block'
+      gEl.textContent='🕶'
+      const gScale=breed.headSize
+      gEl.style.top=(breed.anchor.top+12)+'%'
+      gEl.style.left=breed.anchor.left+'%'
+      gEl.style.fontSize=(baseSize*gScale)+'px'
+    }else{gEl.style.display='none'}
+    
+    // Bow - right side of head
+    const bEl=document.getElementById('accBow')
+    if(eq.bow){
+      bEl.style.display='block'
+      bEl.textContent='🎀'
+      const bScale=breed.headSize
+      bEl.style.top=(breed.anchor.top+5)+'%'
+      bEl.style.right=(100-breed.anchor.left-15)+'%'
+      bEl.style.fontSize=(baseSize*bScale*0.7)+'px'
+    }else{bEl.style.display='none'}
   },
   renderWardrobe(){
     const items = Cat.wardrobe.items, owned = Store.get('wardrobe'), eq = Store.get('equipped')
@@ -365,6 +394,19 @@ const Input = {
 const Cat = {
   dog: {
     emojis: ['🐕','🐶','🐩','🦮','🐕‍🦺'],
+    // Breed data: { emoji, anchor {top%,left%}, headSize (relative to base=1) }
+    breeds: [
+      {emoji:'🐕',anchor:{top:22,left:50},headSize:1.0},      // 柴犬
+      {emoji:'🐶',anchor:{top:18,left:48},headSize:1.2},      // 小狗（头大）
+      {emoji:'🐩',anchor:{top:20,left:50},headSize:0.9},      // 贵宾
+      {emoji:'🦮',anchor:{top:24,left:50},headSize:0.85},     // 导盲犬
+      {emoji:'🐕‍🦺',anchor:{top:22,left:52},headSize:1.05}, // 服务犬
+    ],
+    currentBreed:0,
+    getBreed(){
+      const idx=this.breeds.findIndex(b=>b.emoji===document.getElementById('dogEl').textContent)
+      return this.breeds[idx>=0?idx:0]
+    },
     moods: {happy:'😊 开心',miss:'🥺 想你',sleepy:'😴 困了',hungry:'🤤 馋了',proud:'😎 得意',love:'❤️ 超开心'},
     levels: ['Lv1 陌生柴犬','Lv2 认识你啦','Lv3 最喜欢你','Lv4 永远陪你'],
     levelReq: [50,150,300,999],
