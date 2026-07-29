@@ -1,128 +1,84 @@
 <!DOCTYPE html>
 <html lang="zh">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>我的柴犬</title>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><title>我的柴犬</title>
 <style>
-/* ====== BASE ====== */
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#fce4ec;--card:#fff;--text:#333;--sub:#999;--pink:#e91e63;--gold:#f59e0b;--purple:#7c4dff}
 body.night{--bg:#1a1a2e;--card:#2a2a4a;--text:#e0e0f0;--sub:#888}
 body.sunset{--bg:#ffe0b2;--card:#fff8e1;--text:#5d4037;--sub:#a1887f}
 body.rain{--bg:#e3f2fd;--card:#fff;--text:#37474f;--sub:#90a4ae}
-body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text);
-  min-height:100dvh;overflow-x:hidden;transition:background .8s;
-  display:flex;flex-direction:column;align-items:center;user-select:none;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;overflow-x:hidden;transition:background .8s;display:flex;flex-direction:column;align-items:center;user-select:none;-webkit-tap-highlight-color:transparent}
 .app{max-width:420px;width:100%;padding:16px}
-
-/* ====== HUG OVERLAY ====== */
-.hug-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);
-  z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center}
+.hug-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center}
 .hug-overlay.active{display:flex}
 .hug-dog{font-size:160px;animation:hugBreathe 2s ease-in-out infinite}
 .hug-text{color:#fff;font-size:20px;margin:20px 0;opacity:.9;text-align:center;max-width:280px;line-height:1.5}
 .hug-sub{color:rgba(255,255,255,.4);font-size:13px;cursor:pointer}
 @keyframes hugBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
-
-/* ====== HEADER ====== */
 .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.level-info{font-size:13px;color:var(--sub)}
-.level-bar{height:4px;background:rgba(0,0,0,.06);border-radius:2px;overflow:hidden;margin-bottom:14px}
+.level-info{font-size:13px;color:var(--sub)}.level-bar{height:4px;background:rgba(0,0,0,.06);border-radius:2px;overflow:hidden;margin-bottom:14px}
 .level-fill{height:100%;background:linear-gradient(90deg,var(--pink),var(--gold));border-radius:2px;transition:width .5s}
 
-/* ====== DOG ====== */
-.dog-area{text-align:center;position:relative;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.dog-wrap{position:relative;display:inline-block;cursor:pointer;touch-action:none}
-.dog{font-size:130px;transition:transform .2s;position:relative;z-index:2;pointer-events:none}
-.dog:active{transform:scale(.9)}
-.dog.bounce{animation:bounce .4s ease}
-.dog.wag{animation:wag .3s ease}
-.dog.happy{animation:happy .6s ease}
+/* DOG CANVAS */
+.dog-canvas{position:relative;width:200px;height:200px;margin:0 auto;display:flex;align-items:center;justify-content:center}
+.dog-base{font-size:130px;position:relative;z-index:1;transition:transform .2s}
+.dog-base.bounce{animation:bounce .4s ease}.dog-base.wag{animation:wag .3s ease}.dog-base.happy{animation:happy .6s ease}
 @keyframes bounce{0%,100%{transform:translateY(0)}30%{transform:translateY(-24px)}60%{transform:translateY(-8px)}}
 @keyframes wag{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
 @keyframes happy{0%{transform:scale(1)}30%{transform:scale(1.12) rotate(-6deg)}60%{transform:scale(1.08) rotate(6deg)}100%{transform:scale(1) rotate(0)}}
-.accessory{position:absolute;font-size:36px;pointer-events:none;z-index:3}
-.accessory.hat{top:-28px;left:50%;transform:translateX(-50%)}
-.accessory.bow{top:8px;right:-10px}
-.accessory.glasses{top:20px;left:50%;transform:translateX(-50%)}
-.mood-text{font-size:12px;color:var(--sub);margin-top:8px;height:18px}
+/* Accessory items rendered as absolute positioned spans */
+.acc-item{position:absolute;pointer-events:none;transform:translate(-50%,-50%);transition:all .3s}
+.acc-item.preview{opacity:.4;filter:grayscale(.5)}
 
-/* ====== BUBBLE ====== */
-.bubble{background:var(--card);border-radius:18px;padding:12px 18px;font-size:14px;color:var(--text);
-  box-shadow:0 2px 12px rgba(0,0,0,.06);margin:10px 0;display:none;animation:popIn .4s ease;
-  line-height:1.6;text-align:center;position:relative}
+.mood-text{font-size:12px;color:var(--sub);text-align:center;margin-top:4px;height:18px}
+.bubble{background:var(--card);border-radius:18px;padding:12px 18px;font-size:14px;color:var(--text);box-shadow:0 2px 12px rgba(0,0,0,.06);margin:10px 0;display:none;animation:popIn .4s ease;line-height:1.6;text-align:center}
 .bubble.show{display:block}
 @keyframes popIn{0%{opacity:0;transform:scale(.8) translateY(8px)}100%{opacity:1;transform:scale(1) translateY(0)}}
-
-/* ====== STATS & ACTIONS ====== */
 .stats{display:flex;justify-content:center;gap:18px;margin:8px 0;font-size:12px;color:var(--sub)}
 .stat{display:flex;align-items:center;gap:4px}.stat-v{font-weight:700;color:var(--pink)}
 .actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:8px 0}
-.btn{width:44px;height:44px;border-radius:50%;background:var(--card);border:1px solid rgba(0,0,0,.06);
-  font-size:20px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;
-  position:relative;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-.btn:active{transform:scale(.85)}.btn .badge{position:absolute;top:-4px;right:-4px;background:var(--pink);color:#fff;
-  font-size:9px;border-radius:8px;padding:1px 5px;min-width:16px;text-align:center}
-
-/* ====== BIG BUTTONS ====== */
-.big-btn{display:block;width:100%;padding:14px;border-radius:16px;color:#fff;border:none;font-size:15px;font-weight:600;cursor:pointer;margin:6px 0}
-.big-btn:active{opacity:.8}
-.checkin-btn{background:linear-gradient(135deg,var(--pink),var(--gold))}
-.checkin-btn.done{background:#ddd;color:#999;cursor:default}
+.btn{width:44px;height:44px;border-radius:50%;background:var(--card);border:1px solid rgba(0,0,0,.06);font-size:20px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.btn:active{transform:scale(.85)}.btn .badge{position:absolute;top:-4px;right:-4px;background:var(--pink);color:#fff;font-size:9px;border-radius:8px;padding:1px 5px;min-width:16px;text-align:center}
+.big-btn{display:block;width:100%;padding:14px;border-radius:16px;color:#fff;border:none;font-size:15px;font-weight:600;cursor:pointer;margin:6px 0}.big-btn:active{opacity:.8}
+.checkin-btn{background:linear-gradient(135deg,var(--pink),var(--gold))}.checkin-btn.done{background:#ddd;color:#999;cursor:default}
 .gacha-btn{background:linear-gradient(135deg,var(--purple),#e040fb)}
-
-/* ====== PAGE SYSTEM ====== */
 .page{display:none}.page.active{display:block}
-.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}
-.g-item{background:var(--card);border-radius:12px;padding:10px;text-align:center;font-size:22px;
-  cursor:pointer;border:2px solid transparent;transition:all .15s}
-.g-item.owned{border-color:var(--pink)}
-.g-item:active{transform:scale(.9)}
-.g-item .price{font-size:10px;color:var(--sub);margin-top:2px}
+/* Wardrobe grid */
+.wardrobe-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}
+.w-slot{border-radius:12px;padding:8px;text-align:center;background:var(--card);border:2px solid transparent;cursor:pointer;font-size:13px}
+.w-slot:hover,.w-slot.active{border-color:var(--pink)}
+.w-slot .emoji{font-size:28px;display:block;margin-bottom:2px}
+.w-slot .label{font-size:10px;color:var(--sub)}
+.w-slot .mount{font-size:9px;color:var(--sub);margin-top:2px}
+.outfit-section{margin:10px 0}
+.outfit-chip{display:inline-block;padding:6px 14px;border-radius:14px;background:var(--card);border:1px solid rgba(0,0,0,.08);font-size:12px;cursor:pointer;margin:3px;transition:all .15s}
+.outfit-chip:active{background:var(--pink);color:#fff}
 
-/* ====== EFFECTS ====== */
+/* Effects */
 .hearts{position:fixed;pointer-events:none;z-index:20}
 .heart{position:absolute;font-size:24px;animation:floatUp 1.5s ease-out forwards}
 @keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-150px) scale(.3) rotate(20deg)}}
 .confetti{position:fixed;font-size:20px;pointer-events:none;z-index:30;animation:cFall 2s ease-out forwards}
 @keyframes cFall{0%{opacity:1;transform:translate(0,-20px) rotate(0)}100%{opacity:0;transform:translate(var(--cx),100vh) rotate(var(--cr))}}
-.toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);
-  color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:50;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:50;opacity:0;transition:opacity .3s;pointer-events:none}
 .toast.show{opacity:1}
-.modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:100;
-  display:none;align-items:center;justify-content:center}
+.modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:100;display:none;align-items:center;justify-content:center}
 .modal.show{display:flex}
 .modal-box{background:var(--card);border-radius:20px;padding:24px;text-align:center;max-width:300px;width:90%}
 .modal-box h2{font-size:30px;margin-bottom:8px}.modal-box p{color:var(--sub);font-size:14px;margin-bottom:14px;line-height:1.6}
 .modal-box button{padding:10px 28px;background:var(--pink);color:#fff;border:none;border-radius:20px;font-size:14px;cursor:pointer}
-
-/* ====== FALLING BONES (game) ====== */
 .falling-bone{position:fixed;pointer-events:auto;z-index:999;cursor:pointer;animation:boneFall linear forwards}
 @keyframes boneFall{0%{transform:translateY(-30px)}100%{transform:translateY(105vh)}}
-
-/* ====== POLAROID ====== */
-.polaroid-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);
-  z-index:150;display:none;align-items:center;justify-content:center}
+.polaroid-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:150;display:none;align-items:center;justify-content:center}
 .polaroid-overlay.active{display:flex}
-.polaroid-card{background:#fffdf7;padding:20px 20px 50px;border-radius:4px;
-  box-shadow:0 8px 30px rgba(0,0,0,.2);text-align:center;max-width:280px;width:85%;
-  animation:polaroidIn .5s ease}
+.polaroid-card{background:#fffdf7;padding:20px 20px 50px;border-radius:4px;box-shadow:0 8px 30px rgba(0,0,0,.2);text-align:center;max-width:280px;width:85%;animation:polaroidIn .5s ease}
 @keyframes polaroidIn{0%{opacity:0;transform:scale(.5) rotate(-10deg)}100%{opacity:1;transform:scale(1) rotate(-2deg)}}
-.polaroid-dog{font-size:100px;margin-bottom:8px;position:relative;display:inline-block}
-.polaroid-dog .p-acc{position:absolute;font-size:28px}
-.polaroid-dog .p-acc.hat{top:-22px;left:50%;transform:translateX(-50%)}
-.polaroid-dog .p-acc.bow{top:6px;right:-8px}
-.polaroid-dog .p-acc.glasses{top:16px;left:50%;transform:translateX(-50%)}
-.polaroid-msg{font-size:15px;color:#555;margin:8px 0;line-height:1.5;font-family:'Georgia',serif;font-style:italic}
+.polaroid-dog{font-size:100px;margin-bottom:8px}
+.polaroid-msg{font-size:15px;color:#555;margin:8px 0;line-height:1.5;font-family:Georgia,serif;font-style:italic}
 .polaroid-date{font-size:11px;color:#bbb;margin-top:6px}
 .polaroid-actions{display:flex;gap:12px;justify-content:center;margin-top:16px}
 .polaroid-btn{padding:10px 20px;border-radius:20px;border:none;font-size:14px;cursor:pointer;color:#fff}
 .polaroid-btn.save{background:var(--pink)}.polaroid-btn.close{background:#999}
-.polaroid-stamp{position:absolute;bottom:12px;right:16px;font-size:14px;color:#e91e63;font-weight:700;
-  transform:rotate(-15deg);opacity:.7;font-family:'Georgia',serif}
-
-/* ====== RAIN / WEATHER ====== */
 .rain-drop{position:fixed;font-size:14px;pointer-events:none;z-index:1;animation:rDrop linear forwards}
 @keyframes rDrop{0%{transform:translateY(-20px);opacity:.6}100%{transform:translateY(105vh);opacity:0}}
 .snow-flake{position:fixed;font-size:16px;pointer-events:none;z-index:1;animation:sFall linear forwards}
@@ -133,623 +89,299 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
 </style>
 </head>
 <body id="body">
-<div class="hug-overlay" id="hugOverlay" onclick="Modules.Hug.end()">
-  <div class="hug-dog" id="hugDogEl">🐕</div>
-  <div class="hug-text" id="hugTextEl"></div>
-  <div class="hug-sub">轻触退出</div>
-</div>
+<div class="hug-overlay" id="hugOverlay" onclick="M.Hug.end()"><div class="hug-dog" id="hugDogEl">🐕</div><div class="hug-text" id="hugTextEl"></div><div class="hug-sub">轻触退出</div></div>
 <div class="app">
-  <!-- HEADER -->
-  <div class="header">
-    <div class="level-info" id="levelInfo">Lv1 陌生柴犬</div>
-    <div style="display:flex;gap:8px">
-      <button class="btn" style="width:36px;height:36px;font-size:16px" onclick="UI.showPage('home')">🏠</button>
-      <button class="btn" style="width:36px;height:36px;font-size:16px" onclick="UI.showPage('wardrobe')">👗</button>
-      <button class="btn" style="width:36px;height:36px;font-size:16px" onclick="UI.showPage('collection')">📔</button>
-    </div>
-  </div>
-  <div class="level-bar"><div class="level-fill" id="levelBar" style="width:0%"></div></div>
+<div class="header"><div class="level-info" id="levelInfo">Lv1</div><div style="display:flex;gap:8px"><button class="btn" style="width:36px;height:36px;font-size:16px" onclick="UI.page('home')">🏠</button><button class="btn" style="width:36px;height:36px;font-size:16px" onclick="UI.page('wardrobe')">👗</button><button class="btn" style="width:36px;height:36px;font-size:16px" onclick="UI.page('collection')">📔</button></div></div>
+<div class="level-bar"><div class="level-fill" id="levelBar" style="width:0%"></div></div>
 
-  <!-- HOME PAGE -->
-  <div class="page active" id="pageHome">
-    <div class="dog-area">
-      <div class="dog-wrap" onpointerdown="Input.down(event)" onpointerup="Input.up(event)" onpointerleave="Input.up(event)">
-        <div class="accessory hat" id="accHat" style="display:none"></div>
-        <div class="accessory glasses" id="accGlasses" style="display:none"></div>
-        <div class="accessory bow" id="accBow" style="display:none"></div>
-        <div class="dog" id="dogEl">🐕</div>
-      </div>
-      <div class="mood-text" id="moodText"></div>
-    </div>
-    <div class="bubble" id="bubbleEl"></div>
-    <div class="stats">
-      <div class="stat">❤️ <span class="stat-v" id="sAffection">0</span></div>
-      <div class="stat">🦴 <span class="stat-v" id="sTreats">3</span></div>
-      <div class="stat">📅 <span class="stat-v" id="sDays">1</span>天</div>
-      <div class="stat">🔥 <span class="stat-v" id="sStreak">1</span></div>
-    </div>
-    <div class="actions">
-      <button class="btn" onclick="Modules.Feed.run(event)" title="喂食"><span class="badge" id="treatBadge">3</span>🍖</button>
-      <button class="btn" onclick="Modules.Game.toggle()" id="gameBtn" title="游戏">🎮</button>
-      <button class="btn" onclick="Modules.Love.run()" title="情书">💌</button>
-      <button class="btn" onclick="Modules.Polaroid.open()" title="拍立得">📸</button>
-      <button class="btn" onclick="Modules.Theme.cycle()" title="主题">🎨</button>
-      <button class="btn" onclick="Modules.Audio.toggle()" id="musicBtn">🔊</button>
-    </div>
-    <button class="big-btn checkin-btn" id="checkinBtn" onclick="Modules.Checkin.run()">🎁 每日签到</button>
-    <button class="big-btn gacha-btn" onclick="Modules.Gacha.run()">🎰 抽卡 (5🦴)</button>
-  </div>
-
-  <!-- WARDROBE PAGE -->
-  <div class="page" id="pageWardrobe">
-    <div style="font-weight:600;margin-bottom:10px">👗 衣柜</div>
-    <div class="grid4" id="wardrobeGrid"></div>
-    <button class="big-btn" style="background:var(--card);color:var(--text)" onclick="UI.showPage('home')">← 返回</button>
-  </div>
-
-  <!-- COLLECTION PAGE -->
-  <div class="page" id="pageCollection">
-    <div style="font-weight:600;margin-bottom:10px">📔 收藏册</div>
-    <div class="grid4" id="collectionGrid"></div>
-    <button class="big-btn" style="background:var(--card);color:var(--text)" onclick="UI.showPage('home')">← 返回</button>
-  </div>
+<!-- HOME -->
+<div class="page active" id="pageHome">
+<div class="dog-canvas" id="dogCanvas">
+  <div class="dog-base" id="dogBase" onpointerdown="Input.down(event)" onpointerup="Input.up(event)" onpointerleave="Input.up(event)">🐕</div>
+</div>
+<div class="mood-text" id="moodText"></div>
+<div class="bubble" id="bubbleEl"></div>
+<div class="stats"><div class="stat">❤️ <span class="stat-v" id="sAffection">0</span></div><div class="stat">🦴 <span class="stat-v" id="sTreats">3</span></div><div class="stat">📅 <span class="stat-v" id="sDays">1</span>天</div><div class="stat">🔥 <span class="stat-v" id="sStreak">1</span></div></div>
+<div class="actions">
+<button class="btn" onclick="M.Feed.run(event)"><span class="badge" id="treatBadge">3</span>🍖</button>
+<button class="btn" onclick="M.Game.toggle()" id="gameBtn">🎮</button>
+<button class="btn" onclick="M.Love.run()">💌</button>
+<button class="btn" onclick="M.Polaroid.open()">📸</button>
+<button class="btn" onclick="M.Theme.cycle()">🎨</button>
+<button class="btn" onclick="M.Audio.toggle()" id="musicBtn">🔊</button>
+</div>
+<button class="big-btn checkin-btn" id="checkinBtn" onclick="M.Checkin.run()">🎁 每日签到</button>
+<button class="big-btn gacha-btn" onclick="M.Gacha.run()">🎰 抽卡 (5🦴)</button>
 </div>
 
-<!-- EFFECTS -->
-<div class="hearts" id="heartsEl"></div>
-<div class="toast" id="toastEl"></div>
-<div class="modal" id="modalEl" onclick="if(event.target===this)this.classList.remove('show')">
-  <div class="modal-box"><h2 id="modalIcon"></h2><p id="modalMsg"></p><button onclick="document.getElementById('modalEl').classList.remove('show')">知道啦 ✨</button></div>
+<!-- WARDROBE -->
+<div class="page" id="pageWardrobe"><div style="font-weight:600;margin-bottom:6px">👗 全身装扮</div>
+<div class="outfit-section" id="outfitPresets"></div>
+<div class="wardrobe-grid" id="wardrobeGrid"></div>
+<button class="big-btn" style="background:var(--card);color:var(--text);margin-top:8px" onclick="UI.page('home')">← 返回</button></div>
+
+<!-- COLLECTION -->
+<div class="page" id="pageCollection"><div style="font-weight:600;margin-bottom:10px">📔 收藏册</div>
+<div class="wardrobe-grid" id="collectionGrid"></div>
+<button class="big-btn" style="background:var(--card);color:var(--text);margin-top:10px" onclick="UI.page('home')">← 返回</button></div>
 </div>
 
-<!-- POLAROID OVERLAY -->
-<div class="polaroid-overlay" id="polaroidOverlay" onclick="if(event.target===this) Modules.Polaroid.close()">
-  <div class="polaroid-card" style="position:relative">
-    <div class="polaroid-dog">
-      <span id="pDog">🐕</span>
-      <span class="p-acc hat" id="pAccHat" style="display:none"></span>
-      <span class="p-acc bow" id="pAccBow" style="display:none"></span>
-      <span class="p-acc glasses" id="pAccGlasses" style="display:none"></span>
-    </div>
-    <div class="polaroid-msg" id="pMsg"></div>
-    <div class="polaroid-date" id="pDate"></div>
-    <div class="polaroid-stamp" id="pStamp">🐕</div>
-    <div class="polaroid-actions">
-      <button class="polaroid-btn close" onclick="Modules.Polaroid.close()">✕ 关闭</button>
-      <button class="polaroid-btn save" onclick="Modules.Polaroid.share()">💾 保存</button>
-    </div>
-  </div>
-</div>
-
+<div class="hearts" id="heartsEl"></div><div class="toast" id="toastEl"></div>
+<div class="modal" id="modalEl" onclick="if(event.target===this)this.classList.remove('show')"><div class="modal-box"><h2 id="modalIcon"></h2><p id="modalMsg"></p><button onclick="document.getElementById('modalEl').classList.remove('show')">知道啦 ✨</button></div></div>
+<div class="polaroid-overlay" id="polaroidOverlay" onclick="if(event.target===this)M.Polaroid.close()"><div class="polaroid-card" style="position:relative"><div class="polaroid-dog"><span id="pDog">🐕</span></div><div class="polaroid-msg" id="pMsg"></div><div class="polaroid-date" id="pDate"></div><div style="position:absolute;bottom:12px;right:16px;font-size:14px;color:#e91e63;font-weight:700;transform:rotate(-15deg);opacity:.7;font-family:Georgia,serif">🐕</div><div class="polaroid-actions"><button class="polaroid-btn close" onclick="M.Polaroid.close()">✕</button><button class="polaroid-btn save" onclick="M.Polaroid.share()">💾</button></div></div></div>
 <script>
-// ================================================================
-//  ARCHITECTURE: State → UI → Input → Modules → Effects → Audio
-// ================================================================
-
-// ===================== STATE MANAGER =====================
-const Store = {
-  KEY: 'shiba_v5',
-  defaults: {treats:3, affection:0, level:1, pets:0, days:1, streak:1,
-    lastCheckin:'', wardrobe:{}, equipped:{}, collection:{}, highScore:0,
-    firstOpen:new Date().toISOString(), music:true, theme:'day'},
-  data: null,
-
-  init(){ this.data = JSON.parse(localStorage.getItem(this.KEY) || JSON.stringify(this.defaults))
-    if(!this.data.firstOpen) this.data.firstOpen = new Date().toISOString()
-    if(!this.data.wardrobe) this.data.wardrobe = {}
-    if(!this.data.equipped) this.data.equipped = {}
-    if(!this.data.collection) this.data.collection = {}
-    this.save()
-  },
-  save(){ localStorage.setItem(this.KEY, JSON.stringify(this.data)) },
-  get(k){ return this.data[k] },
-  set(k,v){ this.data[k]=v; this.save() },
-  add(k,n){ this.data[k]=(this.data[k]||0)+n; this.save() },
+// ==================== STORE ====================
+const S={key:'shiba_v6',d:null,
+  init(){this.d=JSON.parse(localStorage.getItem(this.key)||'{"treats":3,"affection":0,"level":1,"pets":0,"days":1,"streak":1,"lastCheckin":"","equipped":{},"collection":{},"highScore":0,"firstOpen":"'+new Date().toISOString()+'","music":true,"owned":{}}');this.save()},
+  save(){localStorage.setItem(this.key,JSON.stringify(this.d))},
+  get(k){return this.d[k]},set(k,v){this.d[k]=v;this.save()},add(k,n){this.d[k]=(this.d[k]||0)+n;this.save()},
 }
 
-// ===================== AUDIO ENGINE =====================
-const Audio = {
-  ctx: null,
-  init(){
-    document.addEventListener('click',()=>{
-      if(!this.ctx) this.ctx = new(window.AudioContext||window.webkitAudioContext)()
-      if(this.ctx.state==='suspended') this.ctx.resume()
-    },{once:true})
-  },
-  _safe(fn){
-    if(!Store.get('music')) return
-    try{ if(!this.ctx||this.ctx.state==='suspended') this.ctx?.resume(); fn(this.ctx) }catch(e){}
-  },
-  bark(){ this._safe(c=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination)
-    o.type='sawtooth';o.frequency.setValueAtTime(500,c.currentTime);o.frequency.exponentialRampToValueAtTime(150,c.currentTime+.2)
-    g.gain.setValueAtTime(.15,c.currentTime);g.gain.exponentialRampToValueAtTime(.01,c.currentTime+.25)
-    o.start();o.stop(c.currentTime+.25)}) },
-  happy(){ this._safe(c=>{[523,659,784].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination)
-    o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(.1,c.currentTime+i*.12);g.gain.exponentialRampToValueAtTime(.01,c.currentTime+.3+i*.12)
-    o.start(c.currentTime+i*.12);o.stop(c.currentTime+.3+i*.12)})}) },
-  purr(){ this._safe(c=>{for(let i=0;i<3;i++){setTimeout(()=>{const o=c.createOscillator(),g=c.createGain()
-    o.connect(g);g.connect(c.destination);o.type='sine';o.frequency.value=60+Math.random()*20
-    g.gain.setValueAtTime(.04,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+1.5)
-    o.start();o.stop(c.currentTime+1.5)},i*500)}}) },
-  toggle(){ Store.set('music',!Store.get('music')); UI.update() },
+// ==================== MOUNT POINT SYSTEM ====================
+const MountPoints={
+  headTop:{top:5,left:50,baseW:60,baseH:30,label:'头顶'},
+  leftEye:{top:28,left:35,baseW:20,baseH:12,label:'左眼'},
+  rightEye:{top:28,left:65,baseW:20,baseH:12,label:'右眼'},
+  neck:{top:42,left:50,baseW:40,baseH:16,label:'脖子'},
+  bodyCenter:{top:62,left:50,baseW:70,baseH:50,label:'身体'},
+  leftPaw:{top:78,left:28,baseW:16,baseH:16,label:'左爪'},
+  rightPaw:{top:78,left:72,baseW:16,baseH:16,label:'右爪'},
+  tail:{top:50,left:82,baseW:16,baseH:16,label:'尾巴'},
 }
 
-// ===================== EFFECTS SYSTEM =====================
-const FX = {
-  hearts(n){
-    const hc=document.getElementById('heartsEl'),e=['💕','💖','✨','🌸','💝','🎀','💗']
-    for(let i=0;i<n;i++) setTimeout(()=>{
-      const h=document.createElement('span');h.className='heart';h.textContent=e[Math.floor(Math.random()*e.length)]
-      h.style.left=Math.random()*80+10+'%';h.style.top='85%';h.style.animationDuration=(1+Math.random()*1.5)+'s'
-      hc.appendChild(h);setTimeout(()=>h.remove(),1800)
-    },i*50)
-  },
-  confetti(){
-    const e=['🎉','🎊','✨','🌟','💫','🎀','🌸','💖']
-    for(let i=0;i<25;i++) setTimeout(()=>{
-      const c=document.createElement('span');c.className='confetti'
-      c.textContent=e[Math.floor(Math.random()*e.length)]
-      c.style.left=Math.random()*100+'%';c.style.top='-20px'
-      c.style.setProperty('--cx',(Math.random()*200-100)+'px');c.style.setProperty('--cr',(Math.random()*720-360)+'deg')
-      document.body.appendChild(c);setTimeout(()=>c.remove(),2200)
-    },i*25)
-  },
-  bubble(msg){ const b=document.getElementById('bubbleEl');b.classList.remove('show');void b.offsetWidth;b.innerHTML=msg;b.classList.add('show') },
-  toast(msg){ const t=document.getElementById('toastEl');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000) },
-  modal(icon,msg){ document.getElementById('modalIcon').textContent=icon;document.getElementById('modalMsg').innerHTML=msg.replace(/\n/g,'<br>');document.getElementById('modalEl').classList.add('show') },
+// ==================== BREED DATA ====================
+const Breeds=[
+  {emoji:'🐕',name:'柴犬',bodyShape:'normal'},
+  {emoji:'🐶',name:'小狗',bodyShape:'round'},
+  {emoji:'🐩',name:'贵宾',bodyShape:'slim'},
+  {emoji:'🦮',name:'导盲犬',bodyShape:'normal'},
+  {emoji:'🐕‍🦺',name:'服务犬',bodyShape:'normal'},
+]
+function getBreed(){const e=document.getElementById('dogBase').textContent;return Breeds.find(b=>b.emoji===e)||Breeds[0]}
+
+// ==================== ACCESSORY CATALOG ====================
+// Each: {id, emoji, name, mount, wearPoint{pctX,pctY}, baseSize, layer, blocks[], price}
+const Accessories=[
+  // HEAD
+  {id:'bow_red',emoji:'🎀',name:'蝴蝶结',mount:'headTop',wearPoint:{pctX:40,pctY:60},baseSize:28,layer:5,blocks:['hat','headAcc'],price:5},
+  {id:'crown',emoji:'👑',name:'皇冠',mount:'headTop',wearPoint:{pctX:50,pctY:80},baseSize:34,layer:5,blocks:['hat','headAcc'],price:30},
+  {id:'hat_small',emoji:'👒',name:'小帽子',mount:'headTop',wearPoint:{pctX:50,pctY:70},baseSize:30,layer:5,blocks:['hat','headAcc'],price:5},
+  {id:'cap',emoji:'🧢',name:'棒球帽',mount:'headTop',wearPoint:{pctX:50,pctY:65},baseSize:32,layer:5,blocks:['hat','headAcc'],price:8},
+  {id:'santa',emoji:'🎄',name:'圣诞帽',mount:'headTop',wearPoint:{pctX:50,pctY:75},baseSize:36,layer:5,blocks:['hat','headAcc'],price:20},
+  {id:'bee',emoji:'🐝',name:'蜜蜂装',mount:'headTop',wearPoint:{pctX:50,pctY:70},baseSize:32,layer:5,blocks:['hat','headAcc'],price:15},
+  // EYES
+  {id:'glasses',emoji:'🕶',name:'墨镜',mount:'leftEye',wearPoint:{pctX:50,pctY:50},baseSize:26,layer:3,blocks:['eyeAcc','glasses'],price:10},
+  {id:'monocle',emoji:'🧐',name:'单片镜',mount:'leftEye',wearPoint:{pctX:50,pctY:40},baseSize:20,layer:3,blocks:['eyeAcc','glasses'],price:3},
+  // NECK
+  {id:'bowtie',emoji:'🎀',name:'领结',mount:'neck',wearPoint:{pctX:50,pctY:50},baseSize:22,layer:2,blocks:['neckAcc'],price:3},
+  {id:'scarf',emoji:'🧣',name:'围巾',mount:'neck',wearPoint:{pctX:50,pctY:50},baseSize:30,layer:1,blocks:['neckAcc'],price:8},
+  // BODY
+  {id:'dress',emoji:'👗',name:'小裙子',mount:'bodyCenter',wearPoint:{pctX:50,pctY:40},baseSize:40,layer:0,blocks:['bodyAcc','outfit'],price:15},
+  {id:'suit',emoji:'👔',name:'西装',mount:'bodyCenter',wearPoint:{pctX:50,pctY:40},baseSize:42,layer:0,blocks:['bodyAcc','outfit'],price:20},
+  // PAWS
+  {id:'bracelet_l',emoji:'💍',name:'左爪戒指',mount:'leftPaw',wearPoint:{pctX:50,pctY:50},baseSize:16,layer:4,blocks:['leftPawAcc'],price:5},
+  {id:'bracelet_r',emoji:'💍',name:'右爪戒指',mount:'rightPaw',wearPoint:{pctX:50,pctY:50},baseSize:16,layer:4,blocks:['rightPawAcc'],price:5},
+  // TAIL
+  {id:'tail_bow',emoji:'🎀',name:'尾巴蝴蝶结',mount:'tail',wearPoint:{pctX:50,pctY:50},baseSize:18,layer:4,blocks:['tailAcc'],price:3},
+]
+
+// OUTFIT PRESETS
+const Outfits=[
+  {name:'🎀 可爱套装',items:['bow_red','dress','tail_bow']},
+  {name:'👔 商务套装',items:['glasses','suit','bowtie']},
+  {name:'🎄 圣诞套装',items:['santa','scarf']},
+  {name:'👑 皇家套装',items:['crown','dress','bracelet_l','bracelet_r']},
+]
+
+// ==================== BREED ADJUSTMENTS ====================
+function getContainerSize(){const c=document.getElementById('dogCanvas');return{cw:c.offsetWidth,ch:c.offsetHeight}}
+function getMountPixelPos(mountKey){
+  const mp=MountPoints[mountKey],{cw,ch}=getContainerSize()
+  return{x:mp.left/100*cw,y:mp.top/100*ch}
+}
+function getBreedScaleFactor(mountKey){
+  const breed=getBreed(),mp=MountPoints[mountKey]
+  let s=1.0
+  if(breed.bodyShape==='round')s*=1.05
+  if(breed.bodyShape==='slim')s*=0.95
+  return s
 }
 
-// ===================== UI RENDERER =====================
-const UI = {
-  showPage(p){
-    document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'))
-    document.getElementById('page'+p[0].toUpperCase()+p.slice(1)).classList.add('active')
-    if(p==='wardrobe') UI.renderWardrobe()
-    if(p==='collection') UI.renderCollection()
+// ==================== RENDER ACCESSORIES ====================
+const AccessoryRenderer={
+  activeEls:[],
+  clear(){
+    this.activeEls.forEach(el=>el.remove());this.activeEls=[]
   },
+  render(previewId=null){
+    this.clear()
+    const eq=S.get('equipped'),canvas=document.getElementById('dogCanvas'),{cw,ch}=getContainerSize()
+    // Sort by layer
+    const entries=[]
+    for(const [k,v] of Object.entries(eq)) entries.push({id:v,key:k})
+    // Get accessory definitions
+    const toRender=entries.map(e=>{const acc=Accessories.find(a=>a.id===e.id);return acc?{...acc,eqKey:e.key}:null}).filter(Boolean)
+    toRender.sort((a,b)=>a.layer-b.layer)
+    
+    toRender.forEach(acc=>{
+      const mp=MountPoints[acc.mount],breedScale=getBreedScaleFactor(acc.mount)
+      const px=mp.left/100*cw, py=mp.top/100*ch
+      const scale=breedScale*(mp.baseW/acc.baseSize)*0.7
+      const size=acc.baseSize*scale
+      
+      const el=document.createElement('span');el.className='acc-item'
+      el.textContent=acc.emoji
+      el.style.left=px+'px';el.style.top=py+'px'
+      el.style.fontSize=size+'px'
+      el.style.transform=`translate(-50%,-50%) translate(${(acc.wearPoint.pctX-50)/100*acc.baseSize}px,${(acc.wearPoint.pctY-50)/100*acc.baseSize}px)`
+      el.style.zIndex=acc.layer
+      if(previewId===acc.id)el.classList.add('preview')
+      canvas.appendChild(el);this.activeEls.push(el)
+    })
+  },
+}
+
+// ==================== AUDIO ====================
+const Audio={ctx:null,
+  init(){document.addEventListener('click',()=>{if(!this.ctx)this.ctx=new(window.AudioContext||window.webkitAudioContext)();if(this.ctx.state==='suspended')this.ctx.resume()},{once:true})},
+  _safe(fn){if(!S.get('music'))return;try{if(!this.ctx||this.ctx.state==='suspended')this.ctx?.resume();fn(this.ctx)}catch(e){}},
+  bark(){this._safe(c=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sawtooth';o.frequency.setValueAtTime(500,c.currentTime);o.frequency.exponentialRampToValueAtTime(150,c.currentTime+.2);g.gain.setValueAtTime(.15,c.currentTime);g.gain.exponentialRampToValueAtTime(.01,c.currentTime+.25);o.start();o.stop(c.currentTime+.25)})},
+  happy(){this._safe(c=>{[523,659,784].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(.1,c.currentTime+i*.12);g.gain.exponentialRampToValueAtTime(.01,c.currentTime+.3+i*.12);o.start(c.currentTime+i*.12);o.stop(c.currentTime+.3+i*.12)})})},
+  purr(){this._safe(c=>{for(let i=0;i<3;i++){setTimeout(()=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sine';o.frequency.value=60+Math.random()*20;g.gain.setValueAtTime(.04,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+1.5);o.start();o.stop(c.currentTime+1.5)},i*500)}})},
+  toggle(){S.set('music',!S.get('music'));UI.update()},
+}
+
+// ==================== FX ====================
+const FX={
+  hearts(n){const hc=document.getElementById('heartsEl'),e=['💕','💖','✨','🌸','💝'];for(let i=0;i<n;i++)setTimeout(()=>{const h=document.createElement('span');h.className='heart';h.textContent=e[Math.floor(Math.random()*e.length)];h.style.left=Math.random()*80+10+'%';h.style.top='85%';h.style.animationDuration=(1+Math.random()*1.5)+'s';hc.appendChild(h);setTimeout(()=>h.remove(),1800)},i*50)},
+  confetti(){const e=['🎉','🎊','✨','🌟','💫','🌸'];for(let i=0;i<25;i++)setTimeout(()=>{const c=document.createElement('span');c.className='confetti';c.textContent=e[Math.floor(Math.random()*e.length)];c.style.left=Math.random()*100+'%';c.style.setProperty('--cx',(Math.random()*200-100)+'px');c.style.setProperty('--cr',(Math.random()*720-360)+'deg');document.body.appendChild(c);setTimeout(()=>c.remove(),2200)},i*25)},
+  bubble(msg){const b=document.getElementById('bubbleEl');b.classList.remove('show');void b.offsetWidth;b.innerHTML=msg;b.classList.add('show')},
+  toast(msg){const t=document.getElementById('toastEl');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000)},
+  modal(icon,msg){document.getElementById('modalIcon').textContent=icon;document.getElementById('modalMsg').innerHTML=msg.replace(/\n/g,'<br>');document.getElementById('modalEl').classList.add('show')},
+}
+
+// ==================== UI ====================
+const UI={
+  page(p){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById('page'+p[0].toUpperCase()+p.slice(1)).classList.add('active');if(p==='wardrobe')UI.renderWardrobe();if(p==='collection')UI.renderCollection()},
   update(){
-    const S=Store.data, lvl=Cat.dog.level(), pct=Cat.dog.levelPct()
-    document.getElementById('levelInfo').textContent = Cat.dog.levels[lvl]
-    document.getElementById('levelBar').style.width = pct+'%'
-    document.getElementById('sAffection').textContent = S.affection
-    document.getElementById('sTreats').textContent = S.treats
-    document.getElementById('sDays').textContent = S.days
-    document.getElementById('sStreak').textContent = S.streak
-    document.getElementById('treatBadge').textContent = S.treats
-    document.getElementById('moodText').textContent = Cat.dog.moodText()
-    document.getElementById('musicBtn').textContent = Store.get('music')?'🔊':'🔇'
-    const today = new Date().toDateString()
-    const cb = document.getElementById('checkinBtn')
-    if(S.lastCheckin===today){ cb.textContent='✅ 今日已签到'; cb.classList.add('done') }
-    else{ cb.textContent='🎁 每日签到'; cb.classList.remove('done') }
-    UI.updateAccessories()
-  },
-  updateAccessories(){
-    const breed=Cat.dog.getBreed(), eq=Store.get('equipped'), items=Cat.wardrobe.items
-    const baseSize=36 // CSS font-size base for accessories
-    
-    // Hat - uses head anchor
-    const hatEl=document.getElementById('accHat')
-    const hatItem=items.find(i=>i.id===eq.hat)
-    if(eq.hat&&hatItem){
-      hatEl.style.display='block'
-      hatEl.textContent=hatItem.emoji
-      const scale=breed.headSize
-      hatEl.style.top=breed.anchor.top+'%'
-      hatEl.style.left=breed.anchor.left+'%'
-      hatEl.style.fontSize=(baseSize*scale)+'px'
-    }else{hatEl.style.display='none'}
-    
-    // Glasses - centered slightly below anchor
-    const gEl=document.getElementById('accGlasses')
-    if(eq.glasses){
-      gEl.style.display='block'
-      gEl.textContent='🕶'
-      const gScale=breed.headSize
-      gEl.style.top=(breed.anchor.top+12)+'%'
-      gEl.style.left=breed.anchor.left+'%'
-      gEl.style.fontSize=(baseSize*gScale)+'px'
-    }else{gEl.style.display='none'}
-    
-    // Bow - right side of head
-    const bEl=document.getElementById('accBow')
-    if(eq.bow){
-      bEl.style.display='block'
-      bEl.textContent='🎀'
-      const bScale=breed.headSize
-      bEl.style.top=(breed.anchor.top+5)+'%'
-      bEl.style.right=(100-breed.anchor.left-15)+'%'
-      bEl.style.fontSize=(baseSize*bScale*0.7)+'px'
-    }else{bEl.style.display='none'}
+    const a=S.get('affection'),reqs=[50,150,300,999],lvl=reqs.findIndex(r=>a<r);const cl=lvl<0?3:lvl,cpct=cl===3?100:cl===0?Math.round(a/reqs[0]*100):Math.round((a-reqs[cl-1])/(reqs[cl]-reqs[cl-1])*100)
+    const names=['陌生柴犬','认识你啦','最喜欢你','永远陪你']
+    document.getElementById('levelInfo').textContent='Lv'+(cl+1)+' '+names[cl];document.getElementById('levelBar').style.width=cpct+'%'
+    document.getElementById('sAffection').textContent=a;document.getElementById('sTreats').textContent=S.get('treats');document.getElementById('sDays').textContent=S.get('days');document.getElementById('sStreak').textContent=S.get('streak');document.getElementById('treatBadge').textContent=S.get('treats');document.getElementById('musicBtn').textContent=S.get('music')?'🔊':'🔇'
+    const now=Date.now(),last=parseInt(localStorage.getItem('shiba_last_active')||'0'),mins=(now-last)/60000
+    const moods={happy:'😊 开心',miss:'🥺 想你',sleepy:'😴 困了',hungry:'🤤 馋了'}
+    let mood='miss';if(S.get('treats')<=0&&mins<30)mood='hungry';else if(mins<5)mood='happy';else if(mins>180)mood='sleepy'
+    document.getElementById('moodText').textContent=moods[mood]||''
+    const today=new Date().toDateString(),cb=document.getElementById('checkinBtn')
+    if(S.get('lastCheckin')===today){cb.textContent='✅ 今日已签到';cb.classList.add('done')}else{cb.textContent='🎁 每日签到';cb.classList.remove('done')}
+    AccessoryRenderer.render()
   },
   renderWardrobe(){
-    const items = Cat.wardrobe.items, owned = Store.get('wardrobe'), eq = Store.get('equipped')
-    document.getElementById('wardrobeGrid').innerHTML = items.map(i=>{
-      const o=owned[i.id], e=eq[i.slot]===i.id
-      return '<div class="g-item'+(o?' owned':'')+(e?'" style="border-color:#f59e0b"':'')+'" onclick="Cat.wardrobe.toggle(\''+i.id+'\')">'+i.emoji+'<div class=price>'+(!o?i.price+'🦴':e?'✓':'穿')+'</div></div>'
-    }).join('')
+    const owned=S.get('owned'),eq=S.get('equipped')
+    // Outfit presets
+    document.getElementById('outfitPresets').innerHTML=Outfits.map((o,i)=>`<span class="outfit-chip" onclick="M.Wardrobe.applyOutfit(${i})">${o.name}</span>`).join(' ')
+    // All accessories grouped by mount
+    const byMount={};Accessories.forEach(a=>{if(!byMount[a.mount])byMount[a.mount]=[];byMount[a.mount].push(a)})
+    let gridHTML=''
+    for(const [mount,accs] of Object.entries(byMount)){
+      gridHTML+=`<div style="grid-column:1/-1;font-size:11px;color:var(--sub);margin-top:8px">${MountPoints[mount].label}</div>`
+      accs.forEach(a=>{
+        const o=owned[a.id],e=eq[a.id]
+        gridHTML+=`<div class="w-slot${e?' active':''}" onclick="M.Wardrobe.toggle('${a.id}')"><span class="emoji" style="opacity:${o?1:.3}">${a.emoji}</span><span class="label">${a.name}</span><span class="mount">${o?(e?'已穿戴':''):a.price+'🦴'}</span></div>`
+      })
+    }
+    document.getElementById('wardrobeGrid').innerHTML=gridHTML
   },
   renderCollection(){
-    document.getElementById('collectionGrid').innerHTML = Cat.collect.items.map(c=>
-      '<div class="g-item"><span style="font-size:24px">'+c+'</span><div class=price>'+(Store.get('collection')[c]||0)+'个</div></div>'
-    ).join('')
+    const items=['🍓','🌼','🍀','⭐','🍬','❤️','🌸','💎','🎀','🦋'],col=S.get('collection')
+    document.getElementById('collectionGrid').innerHTML=items.map(c=>`<div class="w-slot"><span class="emoji">${c}</span><span class="label">${col[c]||0}个</span></div>`).join('')
   },
 }
 
-// ===================== INPUT HANDLER =====================
-const Input = {
-  timer: null, start: 0, didHug: false,
-  down(e){
-    e.preventDefault(); this.didHug=false; this.start=Date.now()
-    clearTimeout(this.timer)
-    this.timer = setTimeout(()=>{ this.didHug=true; Modules.Hug.start() }, 2000)
-  },
-  up(e){
-    e.preventDefault(); clearTimeout(this.timer)
-    if(!this.didHug && Date.now()-this.start<1500) Modules.Dog.tap()
-  },
+// ==================== INPUT ====================
+const Input={timer:null,start:0,didHug:false,
+  down(e){e.preventDefault();this.didHug=false;this.start=Date.now();clearTimeout(this.timer);this.timer=setTimeout(()=>{this.didHug=true;M.Hug.start()},2000)},
+  up(e){e.preventDefault();clearTimeout(this.timer);if(!this.didHug&&Date.now()-this.start<1500)M.Dog.tap()},
 }
 
-// ===================== CATALOG =====================
-const Cat = {
-  dog: {
-    emojis: ['🐕','🐶','🐩','🦮','🐕‍🦺'],
-    // Breed data: { emoji, anchor {top%,left%}, headSize (relative to base=1) }
-    breeds: [
-      {emoji:'🐕',anchor:{top:22,left:50},headSize:1.0},      // 柴犬
-      {emoji:'🐶',anchor:{top:18,left:48},headSize:1.2},      // 小狗（头大）
-      {emoji:'🐩',anchor:{top:20,left:50},headSize:0.9},      // 贵宾
-      {emoji:'🦮',anchor:{top:24,left:50},headSize:0.85},     // 导盲犬
-      {emoji:'🐕‍🦺',anchor:{top:22,left:52},headSize:1.05}, // 服务犬
-    ],
-    currentBreed:0,
-    getBreed(){
-      const idx=this.breeds.findIndex(b=>b.emoji===document.getElementById('dogEl').textContent)
-      return this.breeds[idx>=0?idx:0]
-    },
-    moods: {happy:'😊 开心',miss:'🥺 想你',sleepy:'😴 困了',hungry:'🤤 馋了',proud:'😎 得意',love:'❤️ 超开心'},
-    levels: ['Lv1 陌生柴犬','Lv2 认识你啦','Lv3 最喜欢你','Lv4 永远陪你'],
-    levelReq: [50,150,300,999],
-    level(){ const a=Store.get('affection'); for(let i=3;i>=0;i--) if(a>=this.levelReq[i]||i===0) return i },
-    levelPct(){ const l=this.level(),cur=l>0?Store.get('affection')-this.levelReq[l-1]:Store.get('affection'),max=l>0?this.levelReq[l]-this.levelReq[l-1]:this.levelReq[0];return Math.min(100,Math.round(cur/max*100))},
-    mood(){ const now=Date.now(),last=parseInt(localStorage.getItem('shiba_last_active')||'0'),mins=(now-last)/60000
-      if(Store.get('treats')<=0&&mins<30)return'hungry';if(mins<5)return'happy';if(mins<60)return'miss';if(mins>180)return'sleepy';return'miss'},
-    moodText(){ return this.moods[this.mood()]||'' },
-    dialogues: {
-      happy:['今天心情超好！','嘿嘿，好开心～','你来啦！','汪！今天也很喜欢你'],
-      miss:['好久不见...','一直在等你。','终于来了！','好想你呀'],
-      sleepy:['呼...好困','zzZ...','晚安安...'],
-      hungry:['好饿...','有没有好吃的？','狗粮告急！'],
-      proud:['嘿嘿厉害吧！','看到我的战绩没？'],
-      love:['最最最喜欢你！','永远在一起！','你是全世界最好的！'],
-      idle:['摸摸我好吗？','今天过得怎么样？','我在这里哦。','汪～']
-    },
-    getDialogue(){
-      const mood=this.mood(); const pool=this.dialogues[mood]||this.dialogues.idle
-      return pool[Math.floor(Math.random()*pool.length)]
-    },
-  },
-  wardrobe: {
-    items: [
-      {id:'bow_red',emoji:'🎀',price:5,slot:'bow'},
-      {id:'hat_small',emoji:'👒',price:5,slot:'hat'},
-      {id:'cap',emoji:'🧢',price:8,slot:'hat'},
-      {id:'glasses',emoji:'🕶',price:10,slot:'glasses'},
-      {id:'bee',emoji:'🐝',price:15,slot:'hat'},
-      {id:'santa',emoji:'🎄',price:20,slot:'hat'},
-      {id:'crown',emoji:'👑',price:30,slot:'hat'},
-    ],
-    toggle(itemId){
-      const item=this.items.find(i=>i.id===itemId); if(!item) return
-      const owned=Store.get('wardrobe')
-      if(!owned[itemId]){
-        if(Store.get('treats')<item.price){ FX.toast('🦴不够！需要'+item.price+'狗粮'); return }
-        Store.add('treats',-item.price); owned[itemId]=true; Store.set('wardrobe',owned)
-      }
-      const eq=Store.get('equipped')
-      eq[item.slot]=eq[item.slot]===itemId?null:itemId; Store.set('equipped',eq)
-      UI.renderWardrobe(); UI.update()
-    },
-  },
-  collect: {
-    items: ['🍓','🌼','🍀','⭐','🍬','❤️','🌸','💎','🎀','🦋'],
-    maybeDrop(){
-      if(Math.random()<.15){ const c=this.items[Math.floor(Math.random()*this.items.length)]
-        const col=Store.get('collection'); col[c]=(col[c]||0)+1; Store.set('collection',col); FX.toast('✨ 获得了 '+c) }
-    },
-  },
-  gacha: {
-    pool: [
-      {r:'SSR',t:'🌟',m:'限定皇冠！永久拥有',a:'crown',p:5},
-      {r:'SR',t:'💫',m:'超级狗粮包 +10',p:15},
-      {r:'SR',t:'🎀',m:'稀有蝴蝶结',a:'bow_red',p:15},
-      {r:'R',t:'🍖',m:'狗粮 +5',p:30},
-      {r:'R',t:'🕶',m:'酷酷墨镜',a:'glasses',p:15},
-      {r:'N',t:'🦴',m:'狗粮 +2',p:20},
-    ],
-  },
+// ==================== DIALOGUES ====================
+const Dialogues={
+  idle:['摸摸我好吗？','今天过得怎么样？','我在这里哦。','汪～'],
+  happy:['今天心情超好！','嘿嘿，好开心～','你来啦！','汪！今天也很喜欢你'],
+  miss:['好久不见...','一直在等你。','终于来了！','好想你呀'],
+  sleepy:['呼...好困','zzZ...','晚安安...'],
+  hungry:['好饿...','有没有好吃的？','狗粮告急！'],
+  weather_sun:['太阳好大，戴个墨镜吧 😎','今天天气超好！','阳光和你都很灿烂'],
+  weather_rain:['下雨了，柴犬帮你撑伞 🌂','雨天最适合在家陪你'],
+  weather_snow:['下雪了！好冷，抱紧一点','柴犬的毛很暖和哦'],
+  love_notes:['今天也辛苦了，你真的超棒 ✨','认真工作的你很有魅力 💪','你比自己想象的还要厉害','今天的你也是满分选手 🥇','别给自己太大压力，慢慢来','你的努力，时间看得见 🌱','保持好奇心，你会走得很远','今天有好好吃饭吗？🍱','记得喝水！照顾好自己','你值得被世界温柔以待','今天也是元气满满的一天 ☀️','相信自己，你可以的！','加油！柴犬在终点等你 🐕','你是独一无二的存在 💎'],
+  polaroid_msgs:['今天也是闪闪发光的一天 ✨','被这只柴犬选中的人一定很幸运','每个平凡的日子都因为你变得特别','你的快乐是柴犬的头等大事','柴犬已经把今天存档了 📸','汪！这是专属你的瞬间','今日份开心已打印 💕'],
+  hug_msgs:['抱抱就好...','今天辛苦啦。','我会一直陪着你。','没事的，有我在。','你已经很棒了。','休息一下吧。'],
 }
 
-// ===================== MODULES =====================
-const Modules = {
-  Dog: {
+// ==================== MODULES ====================
+const M={
+  Dog:{
     tap(){
-      Store.add('pets',1); Store.add('affection',1)
-      const dog=document.getElementById('dogEl')
-      // Breed rotation every 12 pets
-      if(Store.get('pets')%12===0){
-        const breeds=Cat.dog.emojis, cur=dog.textContent
-        let nxt; do{nxt=breeds[Math.floor(Math.random()*breeds.length)]}while(nxt===cur&&breeds.length>1)
-        dog.textContent=nxt
-      }
-      dog.classList.add('bounce');setTimeout(()=>dog.classList.remove('bounce'),400)
-      // Weather dialogue weight
-      let dialogue
-      const wd=Modules.Theme.getDialogue()
-      if(wd&&Math.random()<.4) dialogue=wd[Math.floor(Math.random()*wd.length)]
-      else dialogue=Cat.dog.getDialogue()
-      FX.bubble(dialogue);FX.hearts(4+Math.floor(Math.random()*4));Audio.bark()
-      Cat.collect.maybeDrop();UI.update();localStorage.setItem('shiba_last_active',Date.now())
-      // Level up check
-      const newLvl=Cat.dog.level()
-      if(newLvl>Store.get('level')){ Store.set('level',newLvl);FX.modal('🎉','升级啦！\n\n'+Cat.dog.levels[newLvl]);FX.confetti();Audio.happy() }
+      S.add('pets',1);S.add('affection',1)
+      const db=document.getElementById('dogBase')
+      if(S.get('pets')%12===0){const cur=db.textContent,b=Breeds.filter(x=>x.emoji!==cur);if(b.length)db.textContent=b[Math.floor(Math.random()*b.length)].emoji}
+      db.classList.add('bounce');setTimeout(()=>db.classList.remove('bounce'),400)
+      const wd=['weather_sun','weather_rain','weather_snow'][M.Theme.weatherIdx]||null
+      let d;if(wd&&Math.random()<.4&&Dialogues[wd])d=Dialogues[wd][Math.floor(Math.random()*Dialogues[wd].length)];else{const mood=['happy','miss','sleepy'][['happy','miss','sleepy'].indexOf(document.getElementById('moodText').textContent.slice(2))]||'idle';d=Dialogues[mood]?Dialogues[mood][Math.floor(Math.random()*Dialogues[mood].length)]:Dialogues.idle[0]}
+      FX.bubble(d);FX.hearts(4+Math.floor(Math.random()*4));Audio.bark()
+      if(Math.random()<.15){const cc=['🍓','🌼','🍀','⭐','🍬','❤️','🌸','💎','🎀','🦋'],c=cc[Math.floor(Math.random()*cc.length)],col=S.get('collection');col[c]=(col[c]||0)+1;S.set('collection',col);FX.toast('✨ 获得了 '+c)}
+      UI.update();localStorage.setItem('shiba_last_active',Date.now())
+      const a=S.get('affection'),reqs=[50,150,300,999],nl=reqs.findIndex(r=>a<r),nlvl=nl<0?3:nl
+      if(nlvl>S.get('level')){S.set('level',nlvl);FX.modal('🎉','升级啦！\n\nLv'+(nlvl+1)+' '+['陌生柴犬','认识你啦','最喜欢你','永远陪你'][nlvl]);FX.confetti();Audio.happy()}
     },
   },
-
-  Hug: {
-    start(){
-      const hugs=['抱抱就好...','今天辛苦啦。','我会一直陪着你。','没事的，有我在。','你已经很棒了。','休息一下吧。']
-      document.getElementById('hugTextEl').textContent=hugs[Math.floor(Math.random()*hugs.length)]
-      document.getElementById('hugOverlay').classList.add('active')
-      Store.add('affection',2);UI.update();Audio.purr()
-    },
-    end(){ document.getElementById('hugOverlay').classList.remove('active') },
+  Hug:{start(){document.getElementById('hugTextEl').textContent=Dialogues.hug_msgs[Math.floor(Math.random()*Dialogues.hug_msgs.length)];document.getElementById('hugOverlay').classList.add('active');S.add('affection',2);UI.update();Audio.purr()},end(){document.getElementById('hugOverlay').classList.remove('active')}},
+  Feed:{run(e){if(S.get('treats')<=0){FX.toast('🦴 狗粮不够！');return}S.add('treats',-1);S.add('affection',3);FX.bubble('好吃好吃！谢谢 🍖');FX.hearts(6);Audio.happy();UI.update()}},
+  Love:{run(){FX.bubble('💌<br>'+Dialogues.love_notes[Math.floor(Math.random()*Dialogues.love_notes.length)]+'<br><span style=font-size:11px;color:#ccc>——柴犬给你的小纸条</span>');FX.hearts(10);Audio.happy()}},
+  Checkin:{run(){
+    const today=new Date().toDateString();if(S.get('lastCheckin')===today){FX.toast('今天已经签到过啦！');return}
+    const y=new Date(Date.now()-864e5).toDateString(),st=S.get('lastCheckin')===y?S.get('streak')+1:1;S.set('streak',st);S.set('lastCheckin',today);S.add('days',1)
+    let b=3;if(st>=30)b=20;else if(st>=15)b=12;else if(st>=7)b=8;else if(st>=3)b=5;S.add('treats',b);S.add('affection',5)
+    let extra='';const owned=S.get('owned')
+    if(st===3){owned['bow_red']=true;extra=' 🎀 获得蝴蝶结！'}if(st===7){owned['hat_small']=true;extra=' 👒 获得小帽子！'}if(st===15){owned['crown']=true;extra=' 👑 获得皇冠！'}if(st===30){owned['glasses']=true;extra=' 🕶 获得墨镜！'}
+    S.set('owned',owned);FX.modal('🎁','签到成功！\n\n+'+b+' 🦴'+extra+'\n\n连续 '+st+' 天！');FX.confetti();FX.hearts(12);Audio.happy();UI.update()
+  }},
+  Game:{active:false,timer:null,interval:null,score:0,combo:0,maxCombo:0,golden:false,
+    toggle(){this.active?this.stop():this.start()},
+    start(){this.active=true;this.score=0;this.combo=0;this.maxCombo=0;this.golden=false;document.getElementById('gameBtn').textContent='⏹';document.querySelectorAll('.actions .btn:not(#gameBtn),.big-btn').forEach(b=>{b.disabled=true;b.style.opacity='.3'});const o=document.createElement('div');o.id='gameOverlay';o.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;z-index:99;pointer-events:auto';o.onclick=e=>e.stopPropagation();document.body.appendChild(o);FX.toast('🎮 接骨头！');this.interval=setInterval(()=>this.spawn(),700);this.timer=setTimeout(()=>this.stop(),25000);setTimeout(()=>{this.golden=true;FX.toast('🌟 金骨头！')},10000)},
+    spawn(){if(!this.active)return;const b=document.createElement('span'),isG=this.golden&&Math.random()<.2;b.textContent=isG?'🌟':'🍖';b.dataset.pts=isG?'3':'1';b.className='falling-bone';b.style.left=Math.random()*90+'%';b.style.fontSize=isG?'45px':'32px';b.style.animationDuration=(isG?1.3:2+Math.random()*2)+'s';b.onclick=e=>{e.stopPropagation();this.catch(b)};document.body.appendChild(b);setTimeout(()=>b.remove(),6000)},
+    catch(bEl){if(!this.active)return;const pts=parseInt(bEl.dataset.pts||'1');this.combo++;if(this.combo>this.maxCombo)this.maxCombo=this.combo;let bonus=this.combo>=10?3:this.combo>=5?2:this.combo>=3?1:0;this.score+=pts+bonus;bEl.remove();FX.hearts(pts+bonus>1?5:3);Audio.happy();const s=document.createElement('div');s.textContent='+'+pts+bonus;s.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:40px;font-weight:700;color:#e91e63;pointer-events:none;z-index:200;animation:floatScore .8s ease-out forwards';document.body.appendChild(s);setTimeout(()=>s.remove(),900);clearTimeout(this._ct);this._ct=setTimeout(()=>{this.combo=0},1500)},
+    stop(){this.active=false;clearTimeout(this.timer);clearInterval(this.interval);clearTimeout(this._ct);document.getElementById('gameBtn').textContent='🎮';document.querySelectorAll('.actions .btn,.big-btn').forEach(b=>{b.disabled=false;b.style.opacity=''});const o=document.getElementById('gameOverlay');if(o)o.remove();if(this.score>0){const r=Math.floor(this.score/5);S.add('treats',Math.min(r,99));if(this.score>S.get('highScore'))S.set('highScore',this.score);FX.modal('🎯','得分 '+this.score+' | 连击 '+this.maxCombo+'x\n+'+r+' 🦴');UI.update()}this.combo=0;this.maxCombo=0},
   },
-
-  Feed: {
-    run(e){
-      if(Store.get('treats')<=0){ FX.toast('🦴 狗粮不够！试试签到和游戏'); return }
-      Store.add('treats',-1); Store.add('affection',3)
-      if(e){ const t=document.createElement('span');t.style.cssText='position:fixed;font-size:28px;pointer-events:none;z-index:50;animation:throwAnim 1s ease-in forwards;left:'+e.clientX+'px;top:'+e.clientY+'px;--dx:'+(Math.random()*200-100)+'px;--dy:'+(Math.random()*-100-40)+'px';document.getElementById('heartsEl').appendChild(t);t.textContent='🍖';setTimeout(()=>t.remove(),1100)}
-      FX.bubble('好吃好吃！谢谢 🍖');FX.hearts(6);Audio.happy();UI.update()
+  Gacha:{run(){if(S.get('treats')<5){FX.toast('需要 5🦴');return}S.add('treats',-5);const pool=[{r:'SSR',t:'🌟',m:'限定皇冠！',a:'crown',p:5},{r:'SR',t:'💫',m:'狗粮包 +10',p:15},{r:'SR',t:'🎀',m:'稀有蝴蝶结',a:'bow_red',p:15},{r:'R',t:'🍖',m:'狗粮 +5',p:30},{r:'R',t:'🕶',m:'墨镜',a:'glasses',p:15},{r:'N',t:'🦴',m:'狗粮 +2',p:20}];const rand=Math.random()*100;let cum=0,prize=null;for(const p of pool){cum+=p.p;if(rand<cum){prize=p;break}}if(!prize)prize=pool[pool.length-1];if(prize.a){const o=S.get('owned');o[prize.a]=true;S.set('owned',o)}FX.modal(prize.r==='SSR'?'🌟':'🎰',prize.t+' '+prize.r+'!\n'+prize.m);if(prize.r==='SSR'){FX.confetti();FX.hearts(20);Audio.happy()}UI.update()}},
+  Theme:{weatherIdx:0,cycle(){this.weatherIdx=(this.weatherIdx+1)%4;const ws=['☀️','🌧️','❄️','⛅'],bgs=['linear-gradient(135deg,#fff9c4,#ffe0b2)','linear-gradient(135deg,#e3f2fd,#bbdefb)','linear-gradient(135deg,#e8eaf6,#c5cae9)','linear-gradient(135deg,#f5f5f5,#e0e0e0)'];document.body.style.background=bgs[this.weatherIdx];document.querySelectorAll('.rain-drop,.snow-flake,.sun-beam').forEach(e=>e.remove());if(this.weatherIdx===0)for(let i=0;i<15;i++)setTimeout(()=>{const d=document.createElement('span');d.className='sun-beam';d.textContent='✨';d.style.left=Math.random()*100+'%';d.style.animationDuration=(2+Math.random()*3)+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),5000)},i*200);if(this.weatherIdx===1)for(let i=0;i<40;i++)setTimeout(()=>{const d=document.createElement('span');d.className='rain-drop';d.textContent='💧';d.style.left=Math.random()*100+'%';d.style.animationDuration=(1+Math.random()*1.5)+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),2500)},i*60);if(this.weatherIdx===2)for(let i=0;i<30;i++)setTimeout(()=>{const d=document.createElement('span');d.className='snow-flake';d.textContent=['❄️','🌨️','⛄'][Math.floor(Math.random()*3)];d.style.left=Math.random()*100+'%';d.style.animationDuration=(3+Math.random()*4)+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),7000)},i*120);FX.toast('天气：'+ws[this.weatherIdx])}},
+  Audio:{toggle(){Audio.toggle()}},
+  Polaroid:{open(){const db=document.getElementById('dogBase');document.getElementById('pDog').textContent=db.textContent;document.getElementById('pMsg').textContent=Dialogues.polaroid_msgs[Math.floor(Math.random()*Dialogues.polaroid_msgs.length)];const n=new Date();document.getElementById('pDate').textContent=n.getFullYear()+'.'+(n.getMonth()+1)+'.'+n.getDate()+' #柴犬拍立得';document.getElementById('polaroidOverlay').classList.add('active')},close(){document.getElementById('polaroidOverlay').classList.remove('active')},share(){const msg=document.getElementById('pMsg').textContent,date=document.getElementById('pDate').textContent,dogEmoji=document.getElementById('pDog').textContent;const c=document.createElement('canvas');c.width=600;c.height=800;const ctx=c.getContext('2d');ctx.fillStyle='#fffdf7';ctx.fillRect(0,0,600,800);ctx.fillStyle='#fff';ctx.fillRect(30,30,540,700);ctx.font='160px serif';ctx.textAlign='center';ctx.fillText(dogEmoji,300,240);ctx.fillStyle='#555';ctx.font='italic 28px Georgia,serif';ctx.fillText(msg,300,400);ctx.fillStyle='#bbb';ctx.font='18px sans-serif';ctx.fillText(date,300,480);ctx.save();ctx.translate(480,720);ctx.rotate(-15*Math.PI/180);ctx.fillStyle='#e91e63';ctx.font='bold 32px Georgia,serif';ctx.fillText('🐕',0,0);ctx.restore();c.toBlob(blob=>{if(!blob){FX.toast('生成失败');return}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='柴犬拍立得_'+Date.now()+'.png';document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(url),5000);FX.toast('📸 已保存！');if(/iPhone|iPad|iPod/.test(navigator.userAgent))setTimeout(()=>window.open(url,'_blank'),300)},'image/png')}},
+  Wardrobe:{
+    toggle(itemId){
+      const acc=Accessories.find(a=>a.id===itemId);if(!acc)return
+      const owned=S.get('owned'),eq=S.get('equipped')
+      if(!owned[itemId]){if(S.get('treats')<acc.price){FX.toast('🦴不够！需要'+acc.price+'狗粮');return}S.add('treats',-acc.price);owned[itemId]=true;S.set('owned',owned)}
+      // Unequip blocked types
+      if(acc.blocks)acc.blocks.forEach(bt=>{for(const [k,v] of Object.entries(eq)){if(v&&v!==itemId){const ea=Accessories.find(aa=>aa.id===v);if(ea&&ea.blocks&&ea.blocks.some(b=>acc.blocks.includes(b)))delete eq[k]}}})
+      // Toggle
+      if(eq[itemId])delete eq[itemId];else{eq[itemId]=itemId}
+      S.set('equipped',eq);UI.renderWardrobe();UI.update()
     },
-  },
-
-  Love: {
-    run(){
-      const notes=[
-        '今天也辛苦了，你真的超棒 ✨','认真工作的你很有魅力 💪','累了就休息一下，你值得最好的',
-        '你比自己想象的还要厉害','今天的你也是满分选手 🥇','别给自己太大压力，慢慢来',
-        '你的努力，时间看得见 🌱','保持好奇心，你会走得很远','今天有好好吃饭吗？🍱',
-        '记得喝水！照顾好自己','你的笑容是最美的风景 😊','每一天都在变得更好',
-        '坚持下去，未来会很精彩','做自己就好，不用讨好任何人','你值得被世界温柔以待',
-        '今天也是元气满满的一天 ☀️','相信自己，你可以的！','你比昨天又进步了一点点',
-        '加油！柴犬在终点等你 🐕','别怕失败，那是成长的勋章','你的想法很棒，要勇敢表达',
-        '你是独一无二的存在 💎','偶尔摆烂也没关系','生活的美好正在向你走来',
-      ]
-      FX.bubble('💌<br>'+notes[Math.floor(Math.random()*notes.length)]+'<br><span style=font-size:11px;color:#ccc>——柴犬给你的小纸条</span>')
-      FX.hearts(10);Audio.happy()
-    },
-  },
-
-  Checkin: {
-    run(){
-      const today=new Date().toDateString()
-      if(Store.get('lastCheckin')===today){ FX.toast('今天已经签到过啦！'); return }
-      const yesterday=new Date(Date.now()-864e5).toDateString()
-      const streak=Store.get('lastCheckin')===yesterday?Store.get('streak')+1:1
-      Store.set('streak',streak);Store.set('lastCheckin',today);Store.add('days',1)
-      let bonus=3;if(streak>=30)bonus=20;else if(streak>=15)bonus=12;else if(streak>=7)bonus=8;else if(streak>=3)bonus=5
-      Store.add('treats',bonus);Store.add('affection',5)
-      let extra=''
-      if(streak===3){ const w=Store.get('wardrobe');w['bow_red']=true;Store.set('wardrobe',w);extra=' 🎀 获得蝴蝶结！' }
-      if(streak===7){ const w=Store.get('wardrobe');w['hat_small']=true;Store.set('wardrobe',w);extra=' 👒 获得小帽子！' }
-      if(streak===15){ const w=Store.get('wardrobe');w['crown']=true;Store.set('wardrobe',w);extra=' 👑 获得皇冠！' }
-      if(streak===30){ const w=Store.get('wardrobe');w['glasses']=true;Store.set('wardrobe',w);extra=' 🕶 获得墨镜！' }
-      FX.modal('🎁','签到成功！\n\n+'+bonus+' 🦴'+extra+'\n\n连续 '+streak+' 天！');FX.confetti();FX.hearts(12);Audio.happy();UI.update()
-    },
-  },
-
-  Game: {
-    active:false,timer:null,interval:null,score:0,combo:0,maxCombo:0,golden:false,cTimeout:null,
-    toggle(){ this.active?this.stop():this.start() },
-    start(){
-      this.active=true;this.score=0;this.combo=0;this.maxCombo=0;this.golden=false
-      document.getElementById('gameBtn').textContent='⏹'
-      // Disable other buttons during game
-      document.querySelectorAll('.actions .btn:not(#gameBtn),.big-btn').forEach(b=>b.disabled=true)
-      document.querySelectorAll('.actions .btn:not(#gameBtn),.big-btn').forEach(b=>b.style.opacity='.3')
-      // Fullscreen overlay for game area
-      const overlay=document.createElement('div');overlay.id='gameOverlay'
-      overlay.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;z-index:99;pointer-events:auto'
-      overlay.onclick=e=>{e.stopPropagation()}
-      document.body.appendChild(overlay)
-      FX.toast('🎮 接骨头！点 ⏹ 结束')
-      this.interval=setInterval(()=>this.spawn(),700);this.timer=setTimeout(()=>this.stop(),25000)
-      setTimeout(()=>{this.golden=true;FX.toast('🌟 金骨头！')},10000)
-    },
-    spawn(){
-      if(!this.active)return;const b=document.createElement('span')
-      const isG=this.golden&&Math.random()<.2;b.textContent=isG?'🌟':'🍖'
-      b.dataset.pts=isG?'3':'1';b.className='falling-bone'
-      b.style.left=Math.random()*90+'%';b.style.fontSize=isG?'45px':'32px'
-      b.style.animationDuration=(isG?1.3:2+Math.random()*2)+'s'
-      b.onclick=e=>{e.stopPropagation();this.catch(b)}
-      document.body.appendChild(b);setTimeout(()=>b.remove(),6000)
-    },
-    catch(boneEl){
-      if(!this.active)return;const pts=parseInt(boneEl.dataset.pts||'1')
-      this.combo++;if(this.combo>this.maxCombo)this.maxCombo=this.combo
-      let bonus=this.combo>=10?3:this.combo>=5?2:this.combo>=3?1:0
-      this.score+=pts+bonus;boneEl.remove();FX.hearts(pts+bonus>1?5:3);Audio.happy()
-      if(this.combo===3)FX.toast('🔥 3连击！');if(this.combo===5)FX.toast('⚡ 5连击！');if(this.combo===10)FX.toast('💥 10连击！')
-      // Show score floating
-      const s=document.createElement('div');s.textContent='+'+pts+bonus;s.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:40px;font-weight:700;color:#e91e63;pointer-events:none;z-index:200;animation:floatScore .8s ease-out forwards';document.body.appendChild(s);setTimeout(()=>s.remove(),900)
-      clearTimeout(this.cTimeout);this.cTimeout=setTimeout(()=>{this.combo=0},1500)
-    },
-    stop(){
-      this.active=false;clearTimeout(this.timer);clearInterval(this.interval);clearTimeout(this.cTimeout)
-      document.getElementById('gameBtn').textContent='🎮'
-      // Re-enable buttons
-      document.querySelectorAll('.actions .btn,.big-btn').forEach(b=>{b.disabled=false;b.style.opacity=''})
-      // Remove overlay
-      const overlay=document.getElementById('gameOverlay');if(overlay)overlay.remove()
-      if(this.score>0){ const reward=Math.floor(this.score/5);Store.add('treats',Math.min(reward,99))
-        if(this.score>Store.get('highScore'))Store.set('highScore',this.score)
-        FX.modal('🎯','得分 '+this.score+' | 连击 '+this.maxCombo+'x\n+'+reward+' 🦴');UI.update() }
-      this.combo=0;this.maxCombo=0
-    },
-  },
-
-  Gacha: {
-    run(){
-      if(Store.get('treats')<5){ FX.toast('需要 5🦴'); return }
-      Store.add('treats',-5)
-      const r=Math.random()*100;let cum=0,prize=null
-      for(const p of Cat.gacha.pool){ cum+=p.p; if(r<cum){ prize=p; break } }
-      if(!prize) prize=Cat.gacha.pool[Cat.gacha.pool.length-1]
-      let msg=prize.t+' '+prize.r+'!\n'+prize.m
-      if(prize.a){ const w=Store.get('wardrobe');w[prize.a]=true;Store.set('wardrobe',w);msg+='\n已加入衣柜！' }
-      FX.modal(prize.r==='SSR'?'🌟':'🎰',msg)
-      if(prize.r==='SSR'){ FX.confetti();FX.hearts(20);Audio.happy() }
-      UI.update()
-    },
-  },
-
-  Theme: {
-    weathers: ['☀️','🌧️','❄️','⛅'],
-    weatherIdx: 0,
-    cycle(){
-      this.weatherIdx = (this.weatherIdx+1)%this.weathers.length
-      const w = this.weathers[this.weatherIdx]
-      document.getElementById('body').className = 'day' // reset bg
-      // Stop any running weather effects
-      document.querySelectorAll('.rain-drop,.snow-flake,.sun-beam').forEach(e=>e.remove())
-      if(w==='☀️'){ document.body.style.background='linear-gradient(135deg,#fff9c4,#ffe0b2)'; this.sunEffect() }
-      if(w==='🌧️'){ document.body.style.background='linear-gradient(135deg,#e3f2fd,#bbdefb)'; this.rainEffect() }
-      if(w==='❄️'){ document.body.style.background='linear-gradient(135deg,#e8eaf6,#c5cae9)'; this.snowEffect() }
-      if(w==='⛅'){ document.body.style.background='linear-gradient(135deg,#f5f5f5,#e0e0e0)' }
-      FX.toast('天气切换：'+w)
-    },
-    rainEffect(){
-      for(let i=0;i<40;i++) setTimeout(()=>{const d=document.createElement('span');d.className='rain-drop';d.textContent='💧';d.style.left=Math.random()*100+'%';d.style.animationDuration=(1+Math.random()*1.5)+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),2500)},i*60)
-    },
-    snowEffect(){
-      const flakes=['❄️','🌨️','⛄','💠']
-      for(let i=0;i<30;i++) setTimeout(()=>{const d=document.createElement('span');d.className='snow-flake';d.textContent=flakes[Math.floor(Math.random()*flakes.length)];d.style.left=Math.random()*100+'%';d.style.animationDuration=(3+Math.random()*4)+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),7000)},i*120)
-    },
-    sunEffect(){
-      const beams=['☀️','✨','💫','🌟']
-      for(let i=0;i<15;i++) setTimeout(()=>{const d=document.createElement('span');d.className='sun-beam';d.textContent=beams[Math.floor(Math.random()*beams.length)];d.style.left=Math.random()*100+'%';d.style.animationDuration=(2+Math.random()*3)+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),5000)},i*200)
-    },
-    getDialogue(){
-      const w=this.weathers[this.weatherIdx]
-      if(w==='🌧️') return ['下雨了，柴犬帮你撑伞 🌂','雨天最适合在家陪你','外面的雨声很好听']
-      if(w==='❄️') return ['下雪了！好冷，抱紧一点','柴犬的毛很暖和哦','冬天就是要贴在一起']
-      if(w==='☀️') return ['太阳好大，戴个墨镜吧 😎','今天天气超好！','阳光和你都很灿烂']
-      return null
-    },
-  },
-
-  Audio: { toggle(){ Audio.toggle() } },
-
-  Polaroid: {
-    messages: [
-      '今天也是闪闪发光的一天 ✨','被这只柴犬选中的人一定很幸运','柴犬说你的笑容是它最爱的风景','每个平凡的日子都因为你变得特别','今天有人偷偷在想你','你的快乐是柴犬的头等大事','世界上最好的事就是和你在一起','柴犬已经把今天存档了 📸','你值得被这个世界温柔以待','汪！这是专属你的瞬间','宇宙很大 但柴犬只认你一个','今日份开心已打印 💕','柴犬牌好心情已生成','跟你在一起的每一天都是好天气','柴犬偷偷帮你许了个愿 🌟'
-    ],
-    open(){
-      const S=Store.data, eq=S.equipped, items=Cat.wardrobe.items
-      // Dog + accessories
-      const dogEmoji=Cat.dog.emojis[Math.floor(Math.random()*Cat.dog.emojis.length)]
-      document.getElementById('pDog').textContent=dogEmoji
-      // Accessories
-      const hatItem=items.find(i=>i.id===eq.hat),bowItem=items.find(i=>i.id===eq.bow)
-      document.getElementById('pAccHat').style.display=eq.hat?'block':'none'
-      if(eq.hat)document.getElementById('pAccHat').textContent=hatItem?.emoji||''
-      document.getElementById('pAccBow').style.display=eq.bow?'block':'none'
-      if(eq.bow)document.getElementById('pAccBow').textContent='🎀'
-      document.getElementById('pAccGlasses').style.display=eq.glasses?'block':'none'
-      if(eq.glasses)document.getElementById('pAccGlasses').textContent='🕶'
-      // Message
-      document.getElementById('pMsg').textContent=this.messages[Math.floor(Math.random()*this.messages.length)]
-      // Date
-      const now=new Date()
-      document.getElementById('pDate').textContent=now.getFullYear()+'.'+(now.getMonth()+1)+'.'+now.getDate()+' #柴犬拍立得'
-      document.getElementById('pStamp').textContent='🐕'
-      document.getElementById('polaroidOverlay').classList.add('active')
-    },
-    close(){ document.getElementById('polaroidOverlay').classList.remove('active') },
-    share(){
-      // Generate polaroid as image
-      const card=document.querySelector('.polaroid-card')
-      const msg=document.getElementById('pMsg').textContent
-      const date=document.getElementById('pDate').textContent
-      const dogEmoji=document.getElementById('pDog').textContent
-      
-      // Create canvas for polaroid
-      const canvas=document.createElement('canvas')
-      canvas.width=600;canvas.height=800
-      const ctx=canvas.getContext('2d')
-      
-      // Background
-      ctx.fillStyle='#fffdf7';ctx.fillRect(0,0,600,800)
-      // Shadow border
-      ctx.fillStyle='#fff';ctx.fillRect(30,30,540,700)
-      
-      // Dog emoji (large)
-      ctx.font='160px serif';ctx.textAlign='center'
-      ctx.fillText(dogEmoji,300,240)
-      
-      // Accessories
-      const eq=Store.get('equipped')
-      ctx.font='48px serif'
-      if(eq.hat){const item=Cat.wardrobe.items.find(i=>i.id===eq.hat);if(item)ctx.fillText(item.emoji,300,145)}
-      if(eq.glasses)ctx.fillText('🕶',300,200)
-      if(eq.bow)ctx.fillText('🎀',395,195)
-      
-      // Message
-      ctx.fillStyle='#555';ctx.font='italic 28px Georgia,serif';ctx.textAlign='center'
-      ctx.fillText(msg,300,400)
-      
-      // Date
-      ctx.fillStyle='#bbb';ctx.font='18px sans-serif'
-      ctx.fillText(date,300,480)
-      
-      // Stamp
-      ctx.save();ctx.translate(480,720);ctx.rotate(-15*Math.PI/180)
-      ctx.fillStyle='#e91e63';ctx.font='bold 32px Georgia,serif'
-      ctx.fillText('🐕',0,0);ctx.restore()
-      
-      // Download
-      canvas.toBlob(blob=>{
-        if(!blob){FX.toast('生成失败，请截图保存');return}
-        const url=URL.createObjectURL(blob)
-        const a=document.createElement('a');a.href=url;a.download='柴犬拍立得_'+Date.now()+'.png'
-        document.body.appendChild(a);a.click();document.body.removeChild(a)
-        setTimeout(()=>URL.revokeObjectURL(url),5000)
-        FX.toast('📸 已保存到相册/下载目录！')
-        // iOS fallback: open in new tab
-        if(/iPhone|iPad|iPod/.test(navigator.userAgent)){
-          setTimeout(()=>{window.open(url,'_blank')},300)
-        }
-      },'image/png')
+    applyOutfit(idx){
+      const o=Outfits[idx],eq={},owned=S.get('owned')
+      o.items.forEach(id=>{if(owned[id])eq[id]=id;else{FX.toast('需要先获得 '+Accessories.find(a=>a.id===id)?.name||id);return}})
+      S.set('equipped',eq);UI.renderWardrobe();UI.update();FX.toast('✅ '+o.name+' 已穿戴')
     },
   },
 }
 
-// ===================== IDLE ANIMATION =====================
-setInterval(()=>{
-  if(!Modules.Game.active&&!document.getElementById('hugOverlay').classList.contains('active')){
-    const dog=document.getElementById('dogEl')
-    if(Math.random()<.3){ dog.classList.add('wag');setTimeout(()=>dog.classList.remove('wag'),300)
-      if(Math.random()<.2) FX.bubble(Cat.dog.dialogues.idle[Math.floor(Math.random()*Cat.dog.dialogues.idle.length)]) }
-  }
-},15000)
+// IDLE ANIMATION
+setInterval(()=>{if(!M.Game.active&&!document.getElementById('hugOverlay').classList.contains('active')){const db=document.getElementById('dogBase');if(Math.random()<.3){db.classList.add('wag');setTimeout(()=>db.classList.remove('wag'),300);if(Math.random()<.2)FX.bubble(Dialogues.idle[Math.floor(Math.random()*Dialogues.idle.length)])}}},15000)
 
-// ===================== INIT =====================
-Store.init();Audio.init()
-document.getElementById('body').className=Store.get('theme')||'day'
-UI.update()
+// INIT
+S.init();Audio.init();UI.update()
 localStorage.setItem('shiba_last_active',Date.now())
 </script>
 </body>
