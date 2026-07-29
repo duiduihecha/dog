@@ -664,9 +664,16 @@ const Modules = {
       
       // Download
       canvas.toBlob(blob=>{
+        if(!blob){FX.toast('生成失败，请截图保存');return}
         const url=URL.createObjectURL(blob)
-        const a=document.createElement('a');a.href=url;a.download='柴犬拍立得_'+date.replace(/[\/.]/g,'-')+'.png'
-        a.click();URL.revokeObjectURL(url);FX.toast('📸 图片已保存！')
+        const a=document.createElement('a');a.href=url;a.download='柴犬拍立得_'+Date.now()+'.png'
+        document.body.appendChild(a);a.click();document.body.removeChild(a)
+        setTimeout(()=>URL.revokeObjectURL(url),5000)
+        FX.toast('📸 已保存到相册/下载目录！')
+        // iOS fallback: open in new tab
+        if(/iPhone|iPad|iPod/.test(navigator.userAgent)){
+          setTimeout(()=>{window.open(url,'_blank')},300)
+        }
       },'image/png')
     },
   },
