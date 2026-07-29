@@ -342,15 +342,37 @@ const M={
     tap(){
       S.add('pets',1);S.add('affection',1)
       const db=document.getElementById('dogBase')
+      // Breed rotation
       if(S.get('pets')%12===0){const cur=db.textContent,b=Breeds.filter(x=>x.emoji!==cur);if(b.length)db.textContent=b[Math.floor(Math.random()*b.length)].emoji}
-      db.classList.add('bounce');setTimeout(()=>db.classList.remove('bounce'),400)
+      
+      // Random cute animation
+      const anims=['bounce','wag','happy'];db.classList.add(anims[Math.floor(Math.random()*anims.length)]);setTimeout(()=>anims.forEach(a=>db.classList.remove(a)),600)
+      
+      // Sparkle burst around dog
+      const canvas=document.getElementById('dogCanvas'),rect=canvas.getBoundingClientRect()
+      const cx=rect.left+rect.width/2,cy=rect.top+rect.height/3
+      const sparks=['✨','💫','⭐','🌟','💕','💖']
+      for(let i=0;i<8;i++)setTimeout(()=>{const s=document.createElement('span');s.textContent=sparks[Math.floor(Math.random()*sparks.length)];s.style.cssText='position:fixed;font-size:'+(14+Math.random()*16)+'px;pointer-events:none;z-index:50;left:'+(cx+(Math.random()*120-60))+'px;top:'+(cy+(Math.random()*80-40))+'px;opacity:1;transition:all '+(.3+Math.random()*.5)+'s ease-out';document.body.appendChild(s);requestAnimationFrame(()=>{s.style.opacity='0';s.style.transform='translateY(-40px) scale(.5)'});setTimeout(()=>s.remove(),600)},i*30)
+      
+      // Dialogue
+      let dialogue
       const wd=['weather_sun','weather_rain','weather_snow'][M.Theme.weatherIdx]||null
-      let d;if(wd&&Math.random()<.4&&Dialogues[wd])d=Dialogues[wd][Math.floor(Math.random()*Dialogues[wd].length)];else{const mood=['happy','miss','sleepy'][['happy','miss','sleepy'].indexOf(document.getElementById('moodText').textContent.slice(2))]||'idle';d=Dialogues[mood]?Dialogues[mood][Math.floor(Math.random()*Dialogues[mood].length)]:Dialogues.idle[0]}
-      FX.bubble(d);FX.hearts(4+Math.floor(Math.random()*4));Audio.bark()
+      if(wd&&Math.random()<.4&&Dialogues[wd])dialogue=Dialogues[wd][Math.floor(Math.random()*Dialogues[wd].length)]
+      else dialogue=Dialogues.idle[Math.floor(Math.random()*Dialogues.idle.length)]
+      // Add cute prefix sometimes
+      const prefixes=['汪！','嗷呜～','嘿嘿，','呜～','汪呜！']
+      if(Math.random()<.4)dialogue=prefixes[Math.floor(Math.random()*prefixes.length)]+dialogue
+      FX.bubble(dialogue)
+      
+      FX.hearts(6+Math.floor(Math.random()*6));Audio.bark()
+      
+      // Collectible drop
       if(Math.random()<.15){const cc=['🍓','🌼','🍀','⭐','🍬','❤️','🌸','💎','🎀','🦋'],c=cc[Math.floor(Math.random()*cc.length)],col=S.get('collection');col[c]=(col[c]||0)+1;S.set('collection',col);FX.toast('✨ 获得了 '+c)}
       UI.update();localStorage.setItem('shiba_last_active',Date.now())
+      
+      // Level up
       const a=S.get('affection'),reqs=[50,150,300,999],nl=reqs.findIndex(r=>a<r),nlvl=nl<0?3:nl
-      if(nlvl>S.get('level')){S.set('level',nlvl);FX.modal('🎉','升级啦！\n\nLv'+(nlvl+1)+' '+['陌生柴犬','认识你啦','最喜欢你','永远陪你'][nlvl]);FX.confetti();Audio.happy()}
+      if(nlvl>S.get('level')){S.set('level',nlvl);const msgs=['柴犬开始认识你了 💕','你们已经是好朋友啦 🤝','柴犬最喜欢你了！❤️','柴犬决定永远陪着你 🏠'];FX.modal('🎉','升级啦！\n\nLv'+(nlvl+1)+' '+['陌生柴犬','认识你啦','最喜欢你','永远陪你'][nlvl]+'\n\n'+msgs[nlvl]);FX.confetti();FX.hearts(20);Audio.happy()}
     },
   },
   Hug:{start(){document.getElementById('hugTextEl').textContent=Dialogues.hug_msgs[Math.floor(Math.random()*Dialogues.hug_msgs.length)];document.getElementById('hugOverlay').classList.add('active');S.add('affection',2);UI.update();Audio.purr()},end(){document.getElementById('hugOverlay').classList.remove('active')}},
