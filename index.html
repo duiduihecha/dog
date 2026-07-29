@@ -129,6 +129,7 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
 @keyframes sFall{0%{transform:translateY(-20px) rotate(0)}100%{transform:translateY(105vh) rotate(360deg)}}
 .sun-beam{position:fixed;font-size:20px;pointer-events:none;z-index:1;animation:sBeam linear forwards}
 @keyframes sBeam{0%{opacity:0;transform:translateY(-20px)}30%{opacity:.5}100%{opacity:0;transform:translateY(105vh)}}
+@keyframes floatScore{0%{opacity:1;transform:translate(-50%,-50%) scale(.5)}50%{opacity:1;transform:translate(-50%,-80%) scale(1.2)}100%{opacity:0;transform:translate(-50%,-120%) scale(1)}}
 </style>
 </head>
 <body id="body">
@@ -512,16 +513,25 @@ const Modules = {
     toggle(){ this.active?this.stop():this.start() },
     start(){
       this.active=true;this.score=0;this.combo=0;this.maxCombo=0;this.golden=false
-      document.getElementById('gameBtn').textContent='⏹';FX.toast('🎮 接骨头！')
+      document.getElementById('gameBtn').textContent='⏹'
+      // Disable other buttons during game
+      document.querySelectorAll('.actions .btn:not(#gameBtn),.big-btn').forEach(b=>b.disabled=true)
+      document.querySelectorAll('.actions .btn:not(#gameBtn),.big-btn').forEach(b=>b.style.opacity='.3')
+      // Fullscreen overlay for game area
+      const overlay=document.createElement('div');overlay.id='gameOverlay'
+      overlay.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;z-index:99;pointer-events:auto'
+      overlay.onclick=e=>{e.stopPropagation()}
+      document.body.appendChild(overlay)
+      FX.toast('🎮 接骨头！点 ⏹ 结束')
       this.interval=setInterval(()=>this.spawn(),700);this.timer=setTimeout(()=>this.stop(),25000)
       setTimeout(()=>{this.golden=true;FX.toast('🌟 金骨头！')},10000)
     },
     spawn(){
       if(!this.active)return;const b=document.createElement('span')
       const isG=this.golden&&Math.random()<.2;b.textContent=isG?'🌟':'🍖'
-      b.dataset.pts=isG?'3':'1'
-      b.className='falling-bone';b.style.left=Math.random()*90+'%'
-      b.style.fontSize=isG?'40px':'28px';b.style.animationDuration=(isG?1.5:2.5+Math.random()*2)+'s'
+      b.dataset.pts=isG?'3':'1';b.className='falling-bone'
+      b.style.left=Math.random()*90+'%';b.style.fontSize=isG?'45px':'32px'
+      b.style.animationDuration=(isG?1.3:2+Math.random()*2)+'s'
       b.onclick=e=>{e.stopPropagation();this.catch(b)}
       document.body.appendChild(b);setTimeout(()=>b.remove(),6000)
     },
@@ -531,11 +541,17 @@ const Modules = {
       let bonus=this.combo>=10?3:this.combo>=5?2:this.combo>=3?1:0
       this.score+=pts+bonus;boneEl.remove();FX.hearts(pts+bonus>1?5:3);Audio.happy()
       if(this.combo===3)FX.toast('🔥 3连击！');if(this.combo===5)FX.toast('⚡ 5连击！');if(this.combo===10)FX.toast('💥 10连击！')
+      // Show score floating
+      const s=document.createElement('div');s.textContent='+'+pts+bonus;s.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:40px;font-weight:700;color:#e91e63;pointer-events:none;z-index:200;animation:floatScore .8s ease-out forwards';document.body.appendChild(s);setTimeout(()=>s.remove(),900)
       clearTimeout(this.cTimeout);this.cTimeout=setTimeout(()=>{this.combo=0},1500)
     },
     stop(){
       this.active=false;clearTimeout(this.timer);clearInterval(this.interval);clearTimeout(this.cTimeout)
       document.getElementById('gameBtn').textContent='🎮'
+      // Re-enable buttons
+      document.querySelectorAll('.actions .btn,.big-btn').forEach(b=>{b.disabled=false;b.style.opacity=''})
+      // Remove overlay
+      const overlay=document.getElementById('gameOverlay');if(overlay)overlay.remove()
       if(this.score>0){ const reward=Math.floor(this.score/5);Store.add('treats',Math.min(reward,99))
         if(this.score>Store.get('highScore'))Store.set('highScore',this.score)
         FX.modal('🎯','得分 '+this.score+' | 连击 '+this.maxCombo+'x\n+'+reward+' 🦴');UI.update() }
