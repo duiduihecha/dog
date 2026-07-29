@@ -404,17 +404,16 @@ const M={
     rate(v,el){M.Feedback.rating=v;document.querySelectorAll('#emojiRating span').forEach(s=>{s.classList.remove('sel');s.style.opacity='.4';s.style.transform='scale(1)'});el.classList.add('sel');el.style.opacity='1';el.style.transform='scale(1.3)'},
     submit(){
       const txt=document.getElementById('feedbackText').value.trim(),r=this.rating||5
-      const feedbacks=JSON.parse(localStorage.getItem('shiba_feedback')||'[]')
       const fb={rating:r,text:txt,time:new Date().toISOString()}
-      feedbacks.push(fb)
-      localStorage.setItem('shiba_feedback',JSON.stringify(feedbacks))
+      // Save locally
+      const feedbacks=JSON.parse(localStorage.getItem('shiba_feedback')||'[]');feedbacks.push(fb);localStorage.setItem('shiba_feedback',JSON.stringify(feedbacks))
+      // Send to cloud
+      const BLOB='019fae64-98d5-7785-af36-8d8c9b8e6778'
+      fetch('https://jsonblob.com/api/jsonBlob/'+BLOB).then(r=>r.json()).then(all=>{
+        all.push(fb);return fetch('https://jsonblob.com/api/jsonBlob/'+BLOB,{method:'PUT',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(all)})
+      }).catch(()=>{})
       this.hide()
-      
-      // Copy to clipboard so she can send
-      const copyText='🐕 柴犬反馈 ⭐'+r+'/5'+(txt?' — '+txt:'')
-      navigator.clipboard.writeText(copyText).catch(()=>{})
-      
-      FX.modal('💌','谢谢你的反馈！💕\n\n已自动复制 ⭐'+r+'/5\n发给他就能帮柴犬改进啦')
+      FX.modal('💌','谢谢你的反馈！💕\n\n柴犬收到了～')
       FX.hearts(10);Audio.happy()
     },
   },
