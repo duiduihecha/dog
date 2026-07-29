@@ -123,8 +123,12 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
   transform:rotate(-15deg);opacity:.7;font-family:'Georgia',serif}
 
 /* ====== RAIN / WEATHER ====== */
-.rain-drop{position:fixed;font-size:16px;pointer-events:none;z-index:1;animation:rDrop linear forwards}
+.rain-drop{position:fixed;font-size:14px;pointer-events:none;z-index:1;animation:rDrop linear forwards}
 @keyframes rDrop{0%{transform:translateY(-20px);opacity:.6}100%{transform:translateY(105vh);opacity:0}}
+.snow-flake{position:fixed;font-size:16px;pointer-events:none;z-index:1;animation:sFall linear forwards}
+@keyframes sFall{0%{transform:translateY(-20px) rotate(0)}100%{transform:translateY(105vh) rotate(360deg)}}
+.sun-beam{position:fixed;font-size:20px;pointer-events:none;z-index:1;animation:sBeam linear forwards}
+@keyframes sBeam{0%{opacity:0;transform:translateY(-20px)}30%{opacity:.5}100%{opacity:0;transform:translateY(105vh)}}
 </style>
 </head>
 <body id="body">
@@ -429,7 +433,12 @@ const Modules = {
     tap(){
       Store.add('pets',1); Store.add('affection',1)
       const dog=document.getElementById('dogEl');dog.classList.add('bounce');setTimeout(()=>dog.classList.remove('bounce'),400)
-      FX.bubble(Cat.dog.getDialogue());FX.hearts(4+Math.floor(Math.random()*4));Audio.bark()
+      // Weather dialogue weight
+      let dialogue
+      const wd=Modules.Theme.getDialogue()
+      if(wd&&Math.random()<.4) dialogue=wd[Math.floor(Math.random()*wd.length)]
+      else dialogue=Cat.dog.getDialogue()
+      FX.bubble(dialogue);FX.hearts(4+Math.floor(Math.random()*4));Audio.bark()
       Cat.collect.maybeDrop();UI.update();localStorage.setItem('shiba_last_active',Date.now())
       // Level up check
       const newLvl=Cat.dog.level()
@@ -534,14 +543,38 @@ const Modules = {
   },
 
   Theme: {
-    themes: ['day','sunset','night','rain'],
+    weathers: ['☀️','🌧️','❄️','⛅'],
+    weatherIdx: 0,
     cycle(){
-      const idx=this.themes.indexOf(Store.get('theme')||'day')
-      Store.set('theme',this.themes[(idx+1)%this.themes.length])
-      document.getElementById('body').className=Store.get('theme')
-      if(Store.get('theme')==='rain') this.rainEffect()
+      this.weatherIdx = (this.weatherIdx+1)%this.weathers.length
+      const w = this.weathers[this.weatherIdx]
+      document.getElementById('body').className = 'day' // reset bg
+      // Stop any running weather effects
+      document.querySelectorAll('.rain-drop,.snow-flake,.sun-beam').forEach(e=>e.remove())
+      if(w==='☀️'){ document.body.style.background='linear-gradient(135deg,#fff9c4,#ffe0b2)'; this.sunEffect() }
+      if(w==='🌧️'){ document.body.style.background='linear-gradient(135deg,#e3f2fd,#bbdefb)'; this.rainEffect() }
+      if(w==='❄️'){ document.body.style.background='linear-gradient(135deg,#e8eaf6,#c5cae9)'; this.snowEffect() }
+      if(w==='⛅'){ document.body.style.background='linear-gradient(135deg,#f5f5f5,#e0e0e0)' }
+      FX.toast('天气切换：'+w)
     },
-    rainEffect(){ for(let i=0;i<30;i++) setTimeout(()=>{const d=document.createElement('span');d.className='rain-drop';d.textContent='💧';d.style.left=Math.random()*100+'%';d.style.animationDuration=(1.5+Math.random()*1.5)+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),3000)},i*80) },
+    rainEffect(){
+      for(let i=0;i<40;i++) setTimeout(()=>{const d=document.createElement('span');d.className='rain-drop';d.textContent='💧';d.style.left=Math.random()*100+'%';d.style.animationDuration=(1+Math.random()*1.5)+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),2500)},i*60)
+    },
+    snowEffect(){
+      const flakes=['❄️','🌨️','⛄','💠']
+      for(let i=0;i<30;i++) setTimeout(()=>{const d=document.createElement('span');d.className='snow-flake';d.textContent=flakes[Math.floor(Math.random()*flakes.length)];d.style.left=Math.random()*100+'%';d.style.animationDuration=(3+Math.random()*4)+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),7000)},i*120)
+    },
+    sunEffect(){
+      const beams=['☀️','✨','💫','🌟']
+      for(let i=0;i<15;i++) setTimeout(()=>{const d=document.createElement('span');d.className='sun-beam';d.textContent=beams[Math.floor(Math.random()*beams.length)];d.style.left=Math.random()*100+'%';d.style.animationDuration=(2+Math.random()*3)+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),5000)},i*200)
+    },
+    getDialogue(){
+      const w=this.weathers[this.weatherIdx]
+      if(w==='🌧️') return ['下雨了，柴犬帮你撑伞 🌂','雨天最适合在家陪你','外面的雨声很好听']
+      if(w==='❄️') return ['下雪了！好冷，抱紧一点','柴犬的毛很暖和哦','冬天就是要贴在一起']
+      if(w==='☀️') return ['太阳好大，戴个墨镜吧 😎','今天天气超好！','阳光和你都很灿烂']
+      return null
+    },
   },
 
   Audio: { toggle(){ Audio.toggle() } },
