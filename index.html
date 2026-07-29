@@ -101,6 +101,7 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
 @keyframes rain{0%{transform:translateY(-20px);opacity:.6}100%{transform:translateY(105vh);opacity:0}}
 .snow-flake{position:fixed;font-size:16px;pointer-events:none;animation:snow linear forwards;z-index:1}
 @keyframes snow{0%{transform:translateY(-20px) rotate(0)}100%{transform:translateY(105vh) rotate(360deg)}}
+@keyframes fall{0%{transform:translateY(-20px)}100%{transform:translateY(105vh)}}
 </style>
 </head>
 <body class="day" id="body">
@@ -124,9 +125,8 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
   <!-- 主页 -->
   <div class="page active" id="pageHome">
     <div class="dog-area" id="dogArea">
-      <div class="dog-wrap" onmousedown="startPet()" ontouchstart="startPet()"
-           onmouseup="endPet()" ontouchend="endPet()" onclick="tapDog(event)"
-           oncontextmenu="return false">
+      <div class="dog-wrap" onmousedown="startPet(event)" ontouchstart="startPetTouch(event)"
+           onmouseup="endPet(event)" ontouchend="endPet(event)" oncontextmenu="return false">
         <div class="accessory hat" id="accHat" style="display:none"></div>
         <div class="accessory glasses" id="accGlasses" style="display:none"></div>
         <div class="accessory bow" id="accBow" style="display:none"></div>
@@ -187,11 +187,29 @@ if(!S.collection)S.collection={}
 function save(){localStorage.setItem(K,JSON.stringify(S))}
 
 // ===== PET TIMER (holds for hug mode) =====
-let holdTimer=null,holdStart=0,isHolding=false
+let holdTimer=null,holdStart=0,isHolding=false,didHug=false
 
-function startPet(){isHolding=true;holdStart=Date.now()
-  holdTimer=setTimeout(()=>{if(isHolding)startHug()},3000)}
-function endPet(){isHolding=false;clearTimeout(holdTimer)}
+function startPet(e){
+  isHolding=true;didHug=false;holdStart=Date.now()
+  clearTimeout(holdTimer)
+  holdTimer=setTimeout(()=>{
+    if(isHolding){didHug=true;startHug()}
+  },1500)
+}
+
+function endPet(e){
+  clearTimeout(holdTimer)
+  if(!didHug&&isHolding&&Date.now()-holdStart<1500){
+    // Short tap = normal interaction
+    tapDog(e)
+  }
+  isHolding=false
+}
+
+function startPetTouch(e){
+  e.preventDefault()
+  startPet(e)
+}
 
 // ===== HUG MODE =====
 function startHug(){
