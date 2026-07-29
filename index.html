@@ -101,6 +101,27 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
 .falling-bone{position:fixed;pointer-events:auto;z-index:999;cursor:pointer;animation:boneFall linear forwards}
 @keyframes boneFall{0%{transform:translateY(-30px)}100%{transform:translateY(105vh)}}
 
+/* ====== POLAROID ====== */
+.polaroid-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);
+  z-index:150;display:none;align-items:center;justify-content:center}
+.polaroid-overlay.active{display:flex}
+.polaroid-card{background:#fffdf7;padding:20px 20px 50px;border-radius:4px;
+  box-shadow:0 8px 30px rgba(0,0,0,.2);text-align:center;max-width:280px;width:85%;
+  animation:polaroidIn .5s ease}
+@keyframes polaroidIn{0%{opacity:0;transform:scale(.5) rotate(-10deg)}100%{opacity:1;transform:scale(1) rotate(-2deg)}}
+.polaroid-dog{font-size:100px;margin-bottom:8px;position:relative;display:inline-block}
+.polaroid-dog .p-acc{position:absolute;font-size:28px}
+.polaroid-dog .p-acc.hat{top:-22px;left:50%;transform:translateX(-50%)}
+.polaroid-dog .p-acc.bow{top:6px;right:-8px}
+.polaroid-dog .p-acc.glasses{top:16px;left:50%;transform:translateX(-50%)}
+.polaroid-msg{font-size:15px;color:#555;margin:8px 0;line-height:1.5;font-family:'Georgia',serif;font-style:italic}
+.polaroid-date{font-size:11px;color:#bbb;margin-top:6px}
+.polaroid-actions{display:flex;gap:12px;justify-content:center;margin-top:16px}
+.polaroid-btn{padding:10px 20px;border-radius:20px;border:none;font-size:14px;cursor:pointer;color:#fff}
+.polaroid-btn.save{background:var(--pink)}.polaroid-btn.close{background:#999}
+.polaroid-stamp{position:absolute;bottom:12px;right:16px;font-size:14px;color:#e91e63;font-weight:700;
+  transform:rotate(-15deg);opacity:.7;font-family:'Georgia',serif}
+
 /* ====== RAIN / WEATHER ====== */
 .rain-drop{position:fixed;font-size:16px;pointer-events:none;z-index:1;animation:rDrop linear forwards}
 @keyframes rDrop{0%{transform:translateY(-20px);opacity:.6}100%{transform:translateY(105vh);opacity:0}}
@@ -146,6 +167,7 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
       <button class="btn" onclick="Modules.Feed.run(event)" title="喂食"><span class="badge" id="treatBadge">3</span>🍖</button>
       <button class="btn" onclick="Modules.Game.toggle()" id="gameBtn" title="游戏">🎮</button>
       <button class="btn" onclick="Modules.Love.run()" title="情书">💌</button>
+      <button class="btn" onclick="Modules.Polaroid.open()" title="拍立得">📸</button>
       <button class="btn" onclick="Modules.Theme.cycle()" title="主题">🎨</button>
       <button class="btn" onclick="Modules.Audio.toggle()" id="musicBtn">🔊</button>
     </div>
@@ -173,6 +195,25 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
 <div class="toast" id="toastEl"></div>
 <div class="modal" id="modalEl" onclick="if(event.target===this)this.classList.remove('show')">
   <div class="modal-box"><h2 id="modalIcon"></h2><p id="modalMsg"></p><button onclick="document.getElementById('modalEl').classList.remove('show')">知道啦 ✨</button></div>
+</div>
+
+<!-- POLAROID OVERLAY -->
+<div class="polaroid-overlay" id="polaroidOverlay" onclick="if(event.target===this) Modules.Polaroid.close()">
+  <div class="polaroid-card" style="position:relative">
+    <div class="polaroid-dog">
+      <span id="pDog">🐕</span>
+      <span class="p-acc hat" id="pAccHat" style="display:none"></span>
+      <span class="p-acc bow" id="pAccBow" style="display:none"></span>
+      <span class="p-acc glasses" id="pAccGlasses" style="display:none"></span>
+    </div>
+    <div class="polaroid-msg" id="pMsg"></div>
+    <div class="polaroid-date" id="pDate"></div>
+    <div class="polaroid-stamp" id="pStamp">🐕</div>
+    <div class="polaroid-actions">
+      <button class="polaroid-btn close" onclick="Modules.Polaroid.close()">✕ 关闭</button>
+      <button class="polaroid-btn save" onclick="Modules.Polaroid.share()">💾 保存</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -504,6 +545,42 @@ const Modules = {
   },
 
   Audio: { toggle(){ Audio.toggle() } },
+
+  Polaroid: {
+    messages: [
+      '今天也是闪闪发光的一天 ✨','被这只柴犬选中的人一定很幸运','柴犬说你的笑容是它最爱的风景','每个平凡的日子都因为你变得特别','今天有人偷偷在想你','你的快乐是柴犬的头等大事','世界上最好的事就是和你在一起','柴犬已经把今天存档了 📸','你值得被这个世界温柔以待','汪！这是专属你的瞬间','宇宙很大 但柴犬只认你一个','今日份开心已打印 💕','柴犬牌好心情已生成','跟你在一起的每一天都是好天气','柴犬偷偷帮你许了个愿 🌟'
+    ],
+    open(){
+      const S=Store.data, eq=S.equipped, items=Cat.wardrobe.items
+      // Dog + accessories
+      const dogEmoji=Cat.dog.emojis[Math.floor(Math.random()*Cat.dog.emojis.length)]
+      document.getElementById('pDog').textContent=dogEmoji
+      // Accessories
+      const hatItem=items.find(i=>i.id===eq.hat),bowItem=items.find(i=>i.id===eq.bow)
+      document.getElementById('pAccHat').style.display=eq.hat?'block':'none'
+      if(eq.hat)document.getElementById('pAccHat').textContent=hatItem?.emoji||''
+      document.getElementById('pAccBow').style.display=eq.bow?'block':'none'
+      if(eq.bow)document.getElementById('pAccBow').textContent='🎀'
+      document.getElementById('pAccGlasses').style.display=eq.glasses?'block':'none'
+      if(eq.glasses)document.getElementById('pAccGlasses').textContent='🕶'
+      // Message
+      document.getElementById('pMsg').textContent=this.messages[Math.floor(Math.random()*this.messages.length)]
+      // Date
+      const now=new Date()
+      document.getElementById('pDate').textContent=now.getFullYear()+'.'+(now.getMonth()+1)+'.'+now.getDate()+' #柴犬拍立得'
+      document.getElementById('pStamp').textContent='🐕'
+      document.getElementById('polaroidOverlay').classList.add('active')
+    },
+    close(){ document.getElementById('polaroidOverlay').classList.remove('active') },
+    share(){
+      const msg=document.getElementById('pMsg').textContent
+      const date=document.getElementById('pDate').textContent
+      const text='🐕 柴犬拍立得\n'+msg+'\n'+date+'\n\n'+location.href
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(()=>FX.toast('📋 已复制分享文案！')).catch(()=>FX.toast('长按屏幕截图保存吧 🐕'))
+      }else{FX.toast('📸 截图保存吧！')}
+    },
+  },
 }
 
 // ===================== IDLE ANIMATION =====================
