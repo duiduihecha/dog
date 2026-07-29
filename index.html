@@ -32,8 +32,8 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
 .level-bar{height:4px;background:rgba(0,0,0,.06);border-radius:2px;overflow:hidden;margin-bottom:16px}
 .level-fill{height:100%;background:linear-gradient(90deg,#e91e63,#f59e0b);border-radius:2px;transition:width .5s}
 .dog-area{text-align:center;position:relative;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.dog-wrap{position:relative;display:inline-block;cursor:pointer}
-.dog{font-size:130px;transition:transform .2s;position:relative;z-index:2}
+.dog-wrap{position:relative;display:inline-block;cursor:pointer;touch-action:none}
+.dog{font-size:130px;transition:transform .2s;position:relative;z-index:2;pointer-events:none}
 .dog:active{transform:scale(.9)}
 .dog.bounce{animation:bounce .4s ease}
 .dog.wag{animation:wag .3s ease}
@@ -125,8 +125,8 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
   <!-- 主页 -->
   <div class="page active" id="pageHome">
     <div class="dog-area" id="dogArea">
-      <div class="dog-wrap" onmousedown="startPet(event)" ontouchstart="startPetTouch(event)"
-           onmouseup="endPet(event)" ontouchend="endPet(event)" oncontextmenu="return false">
+      <div class="dog-wrap" onpointerdown="startPet(event)" onpointerup="endPet(event)"
+           onpointerleave="endPet(event)" oncontextmenu="return false">
         <div class="accessory hat" id="accHat" style="display:none"></div>
         <div class="accessory glasses" id="accGlasses" style="display:none"></div>
         <div class="accessory bow" id="accBow" style="display:none"></div>
@@ -186,29 +186,23 @@ if(!S.collection)S.collection={}
 
 function save(){localStorage.setItem(K,JSON.stringify(S))}
 
-// ===== PET TIMER (holds for hug mode) =====
-let holdTimer=null,holdStart=0,isHolding=false,didHug=false
+// ===== PET TIMER =====
+let holdTimer=null,holdStart=0,didHug=false
 
 function startPet(e){
-  isHolding=true;didHug=false;holdStart=Date.now()
+  e.preventDefault();e.stopPropagation()
+  didHug=false;holdStart=Date.now()
   clearTimeout(holdTimer)
-  holdTimer=setTimeout(()=>{
-    if(isHolding){didHug=true;startHug()}
-  },1500)
+  holdTimer=setTimeout(()=>{didHug=true;startHug()},2000)
 }
 
 function endPet(e){
+  e.preventDefault();e.stopPropagation()
   clearTimeout(holdTimer)
-  if(!didHug&&isHolding&&Date.now()-holdStart<1500){
-    // Short tap = normal interaction
+  const elapsed=Date.now()-holdStart
+  if(!didHug&&elapsed<1500){
     tapDog(e)
   }
-  isHolding=false
-}
-
-function startPetTouch(e){
-  e.preventDefault()
-  startPet(e)
 }
 
 // ===== HUG MODE =====
