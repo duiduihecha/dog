@@ -432,7 +432,14 @@ const Modules = {
   Dog: {
     tap(){
       Store.add('pets',1); Store.add('affection',1)
-      const dog=document.getElementById('dogEl');dog.classList.add('bounce');setTimeout(()=>dog.classList.remove('bounce'),400)
+      const dog=document.getElementById('dogEl')
+      // Breed rotation every 12 pets
+      if(Store.get('pets')%12===0){
+        const breeds=Cat.dog.emojis, cur=dog.textContent
+        let nxt; do{nxt=breeds[Math.floor(Math.random()*breeds.length)]}while(nxt===cur&&breeds.length>1)
+        dog.textContent=nxt
+      }
+      dog.classList.add('bounce');setTimeout(()=>dog.classList.remove('bounce'),400)
       // Weather dialogue weight
       let dialogue
       const wd=Modules.Theme.getDialogue()
