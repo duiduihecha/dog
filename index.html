@@ -71,7 +71,7 @@ body.night .btn{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.0
     <button class="btn" onclick="switchTheme('sunset')" title="黄昏">🌅</button>
     <button class="btn" onclick="switchTheme('night')" title="晚上">🌙</button>
     <button class="btn" onclick="throwTreat(event)" title="喂食"><span class="badge" id="treatBadge">3</span>🍖</button>
-    <button class="btn" onclick="toggleMusic()" title="音乐" id="musicBtn">🔇</button>
+    <button class="btn" onclick="toggleMusic()" title="音乐" id="musicBtn">🔊</button>
   </div>
 </div>
 <div class="hearts" id="hearts"></div>
@@ -85,8 +85,14 @@ body.night .btn{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.0
 
 <script>
 const dogs = ['🐕','🐶','🐩','🦮','🐕‍🦺','🐾']
-let state = {happiness:100,treats:3,pets:0,dogIdx:0,music:false}
+let state = {happiness:100,treats:3,pets:0,dogIdx:0,music:true}
 let audioCtx = null
+
+// 预热 AudioContext（iOS 需要先 resume）
+document.addEventListener('click',()=>{
+  if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)()
+  if(audioCtx.state==='suspended') audioCtx.resume()
+},{once:true})
 
 const msgs = [
   "今天辛苦了，喝杯水休息一下 ☕",
@@ -119,31 +125,42 @@ const achievements = {
 
 function playBark(){
   if(!state.music) return
-  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)()
-  const o=audioCtx.createOscillator(),g=audioCtx.createGain()
-  o.connect(g);g.connect(audioCtx.destination)
-  o.type='sine';o.frequency.setValueAtTime(600,audioCtx.currentTime)
-  o.frequency.exponentialRampToValueAtTime(200,audioCtx.currentTime+.15)
-  g.gain.setValueAtTime(.15,audioCtx.currentTime)
-  g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+.2)
-  o.start();o.stop(audioCtx.currentTime+.2)
+  try{
+    if(!audioCtx){audioCtx=new(window.AudioContext||window.webkitAudioContext)()}
+    if(audioCtx.state==='suspended') audioCtx.resume()
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain()
+    o.connect(g);g.connect(audioCtx.destination)
+    o.type='sawtooth';o.frequency.setValueAtTime(500,audioCtx.currentTime)
+    o.frequency.exponentialRampToValueAtTime(150,audioCtx.currentTime+.2)
+    g.gain.setValueAtTime(.2,audioCtx.currentTime)
+    g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+.25)
+    o.start();o.stop(audioCtx.currentTime+.25)
+  }catch(e){}
 }
 
 function playHappy(){
   if(!state.music) return
-  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)()
-  const notes=[523,659,784]
-  notes.forEach((f,i)=>{
-    const o=audioCtx.createOscillator(),g=audioCtx.createGain()
-    o.connect(g);g.connect(audioCtx.destination)
-    o.type='triangle';o.frequency.value=f
-    g.gain.setValueAtTime(.1,audioCtx.currentTime+i*.12)
-    g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+.3+i*.12)
-    o.start(audioCtx.currentTime+i*.12);o.stop(audioCtx.currentTime+.3+i*.12)
-  })
+  try{
+    if(!audioCtx){audioCtx=new(window.AudioContext||window.webkitAudioContext)()}
+    if(audioCtx.state==='suspended') audioCtx.resume()
+    const notes=[523,659,784]
+    notes.forEach((f,i)=>{
+      const o=audioCtx.createOscillator(),g=audioCtx.createGain()
+      o.connect(g);g.connect(audioCtx.destination)
+      o.type='triangle';o.frequency.value=f
+      g.gain.setValueAtTime(.12,audioCtx.currentTime+i*.15)
+      g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+.4+i*.15)
+      o.start(audioCtx.currentTime+i*.15)
+      o.stop(audioCtx.currentTime+.4+i*.15)
+    })
+  }catch(e){}
 }
 
 function petDog(e){
+  // 首次点击初始化音频
+  if(!audioCtx){audioCtx=new(window.AudioContext||window.webkitAudioContext)()}
+  if(audioCtx.state==='suspended') audioCtx.resume()
+  
   const dog=document.getElementById('dog')
   const anims=['bounce','shake','happy']
   dog.classList.add(anims[Math.floor(Math.random()*anims.length)])
