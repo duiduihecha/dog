@@ -310,12 +310,34 @@ function updateScore(){
 }
 
 // 💌 分享卡片
-async function shareCard(){
-  const msg=msgs[Math.floor(Math.random()*msgs.length)]
-  const dogEmoji=dogs[state.dogIdx]
-  const text=`${dogEmoji} 柴犬说：${msg}\n——————\n🐾 戳了 ${state.pets} 下 | 🦴 ${state.treats} 个狗粮\n🧡 幸福值 ${state.happiness}%\n\n你也来戳 👉 ${location.href}`
-  try{await navigator.clipboard.writeText(text);toast('📋 复制好了！发给她吧')}
-  catch(e){toast('📋 长按复制这段话发给TA\n'+text.substring(0,30)+'...')}
+function shareCard(){
+  const hour=new Date().getHours()
+  const d=dogs[state.dogIdx]
+  
+  // 根据时间生成不同风格
+  const morning=["早上好呀，今天也要元气满满 ☀️","今天的阳光和你一样温柔 🌤️","早～柴犬说它梦到你了 💭"]
+  const noon=["午饭吃了没？别饿着自己 🍱","中午休息一下，下午才有力气摸鱼 ☕","柴犬提醒：该恰饭了！🍜"]
+  const afternoon=["打工累了吧？柴犬给你加油 💪","还有一会儿就下班了，坚持住 ⏰","偷偷告诉你，今天的你很棒 ✨"]
+  const evening=["下班！今天的烦恼到此为止 🍻","辛苦了，晚上好好犒劳自己 🌙","柴犬牌晚安已送达，请签收 💤"]
+  
+  let msgs=afternoon
+  if(hour<10)msgs=morning
+  else if(hour<13)msgs=noon
+  else if(hour<18)msgs=afternoon
+  else msgs=evening
+  
+  const line=msgs[Math.floor(Math.random()*msgs.length)]
+  
+  // 根据互动量加彩蛋
+  let extra=''
+  if(state.pets>=50)extra='\n（这只柴犬已经跟你混得很熟了 🐾）'
+  else if(state.pets>=20)extra='\n（柴犬说它开始喜欢你了 💕）'
+  else if(state.pets>=5)extra='\n（新朋友你好 👋）'
+  
+  const text=`${d} ${line}${extra}\n\n你也来戳戳柴犬 👇\n${location.href}`
+  
+  try{navigator.clipboard.writeText(text);toast('📋 已复制！发给她吧')}
+  catch(e){toast('📋 '+text.substring(0,25)+'...')}
 }
 
 function spawnPaw(x,y){
