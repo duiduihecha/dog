@@ -2,426 +2,462 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>戳一下 🐕</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>我的柴犬</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{display:flex;justify-content:center;align-items:center;min-height:100dvh;font-family:-apple-system,sans-serif;overflow:hidden;transition:background .5s}
-body.day{background:linear-gradient(135deg,#fce4ec,#e8eaf6)}
-body.night{background:linear-gradient(135deg,#1a1a2e,#16213e);color:#e0e8f4}
-body.sunset{background:linear-gradient(135deg,#ffe0b2,#ffccbc)}
-body.play{background:linear-gradient(135deg,#e8f5e9,#c8e6c9)}
-.card{text-align:center;max-width:420px;padding:16px;position:relative;z-index:5}
-.dog-container{position:relative;display:inline-block;margin:8px 0;transition:all .3s}
-.dog{font-size:120px;cursor:pointer;transition:transform .15s,font-size .3s;user-select:none;display:inline-block;position:relative;z-index:2}
-.dog:active{transform:scale(.85)}
+:root{
+  --bg:#fce4ec;--card:#fff;--text:#333;--sub:#999;--pink:#e91e63;--gold:#f59e0b;
+}
+body.night{--bg:#1a1a2e;--card:#2a2a4a;--text:#e0e0f0;--sub:#888}
+body.sunset{--bg:#ffe0b2;--card:#fff8e1;--text:#5d4037;--sub:#a1887f}
+body.rain{--bg:#e3f2fd;--card:#fff;--text:#37474f;--sub:#90a4ae}
+body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text);
+  min-height:100dvh;overflow-x:hidden;transition:background .8s;
+  display:flex;flex-direction:column;align-items:center;user-select:none;
+  -webkit-tap-highlight-color:transparent}
+.hug-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.8);
+  z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center;
+  animation:fadeIn .8s}
+.hug-overlay.active{display:flex}
+.hug-dog{font-size:180px;animation:hugBreathe 2s ease-in-out infinite}
+.hug-text{color:#fff;font-size:20px;margin:20px 0;opacity:.9;text-align:center}
+.hug-sub{color:rgba(255,255,255,.5);font-size:13px}
+.hug-close{color:rgba(255,255,255,.4);margin-top:40px;font-size:14px;cursor:pointer}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes hugBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.container{max-width:420px;width:100%;padding:16px;position:relative}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.level{font-size:13px;color:var(--sub)}
+.level-bar{height:4px;background:rgba(0,0,0,.06);border-radius:2px;overflow:hidden;margin-bottom:16px}
+.level-fill{height:100%;background:linear-gradient(90deg,#e91e63,#f59e0b);border-radius:2px;transition:width .5s}
+.dog-area{text-align:center;position:relative;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.dog-wrap{position:relative;display:inline-block;cursor:pointer}
+.dog{font-size:130px;transition:transform .2s;position:relative;z-index:2}
+.dog:active{transform:scale(.9)}
 .dog.bounce{animation:bounce .4s ease}
-.dog.shake{animation:shake .5s ease}
-.dog.happy{animation:happy .6s ease}
-@keyframes bounce{0%,100%{transform:translateY(0)}30%{transform:translateY(-28px)}60%{transform:translateY(-10px)}}
-@keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg)}75%{transform:rotate(12deg)}}
-@keyframes happy{0%{transform:scale(1)}30%{transform:scale(1.15) rotate(-8deg)}60%{transform:scale(1.1) rotate(8deg)}100%{transform:scale(1) rotate(0)}}
-.paw{position:absolute;font-size:30px;pointer-events:none;animation:pawFade 3s ease-out forwards;z-index:1}
-@keyframes pawFade{0%{opacity:.6;transform:scale(.5)}30%{opacity:.3;transform:scale(1)}100%{opacity:0;transform:scale(.8) translateY(20px)}}
-.bubble{background:#fff;border-radius:22px;padding:14px 20px;font-size:14px;color:#333;box-shadow:0 4px 24px rgba(0,0,0,.1);margin-top:14px;display:none;animation:popIn .4s ease;line-height:1.6;position:relative}
-body.night .bubble{background:#2a2a4a;color:#e0e0f0}
-body.sunset .bubble{background:#fff8e1;color:#5d4037}
+.dog.wag{animation:wag .3s ease}
+@keyframes bounce{0%,100%{transform:translateY(0)}30%{transform:translateY(-24px)}60%{transform:translateY(-8px)}}
+@keyframes wag{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
+.accessory{position:absolute;font-size:36px;pointer-events:none;z-index:3}
+.accessory.hat{top:-28px;left:50%;transform:translateX(-50%)}
+.accessory.bow{top:8px;right:-10px}
+.accessory.glasses{top:20px;left:50%;transform:translateX(-50%)}
+.mood{font-size:12px;color:var(--sub);margin-top:8px;height:18px}
+.bubble{background:var(--card);border-radius:18px;padding:12px 18px;font-size:14px;color:var(--text);
+  box-shadow:0 2px 12px rgba(0,0,0,.06);margin:10px 0;display:none;animation:popIn .4s ease;
+  line-height:1.6;text-align:center;position:relative}
 .bubble.show{display:block}
-.bubble::after{content:'';position:absolute;top:-8px;left:50%;transform:translateX(-50%);border:8px solid transparent;border-bottom-color:#fff}
-body.night .bubble::after{border-bottom-color:#2a2a4a}
-body.sunset .bubble::after{border-bottom-color:#fff8e1}
-@keyframes popIn{0%{opacity:0;transform:scale(.7) translateY(10px)}100%{opacity:1;transform:scale(1) translateY(0)}}
-.hint{color:#aaa;font-size:11px;margin-top:10px;transition:opacity .3s}
-.stats{display:flex;justify-content:center;gap:18px;margin:8px 0;font-size:12px;color:#888}
-.stat{display:flex;align-items:center;gap:3px}
-.stat-val{color:#e91e63;font-weight:700}
-.controls{display:flex;gap:8px;justify-content:center;margin-top:8px;flex-wrap:wrap}
-.btn{font-size:18px;background:rgba(255,255,255,.7);border:1px solid rgba(0,0,0,.06);border-radius:50%;width:42px;height:42px;cursor:pointer;transition:all .15s;position:relative;display:flex;align-items:center;justify-content:center}
-body.night .btn{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.05)}
-.btn:active{transform:scale(.82);background:rgba(255,255,255,.9)}
-.btn .badge{position:absolute;top:-6px;right:-6px;background:#e91e63;color:#fff;font-size:10px;border-radius:10px;padding:1px 6px;min-width:18px}
-.treat{position:fixed;font-size:28px;pointer-events:none;z-index:50;animation:throwTreat 1.2s ease-in forwards}
-@keyframes throwTreat{0%{opacity:1;transform:translate(0,0) rotate(0)}50%{opacity:1;transform:translate(var(--dx),var(--dy)) rotate(360deg)}100%{opacity:0;transform:translate(calc(var(--dx)*2),calc(var(--dy)*1.5+60px)) rotate(720deg)}}
-.falling{position:fixed;font-size:30px;pointer-events:none;animation:fall linear forwards}
-@keyframes fall{0%{transform:translateY(-10px) rotate(0)}100%{transform:translateY(105vh) rotate(720deg)}}
-.hearts{position:fixed;pointer-events:none;z-index:10}
-.heart{position:absolute;font-size:26px;animation:floatUp 1.5s ease-out forwards}
-@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-160px) scale(.35) rotate(25deg)}}
-.confetti{position:fixed;font-size:20px;pointer-events:none;z-index:30;animation:confettiFall 2s ease-out forwards}
-@keyframes confettiFall{0%{opacity:1;transform:translate(0,-20px) rotate(0)}100%{opacity:0;transform:translate(var(--cx),100vh) rotate(var(--cr))}}
-.modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:100;display:none}
+@keyframes popIn{0%{opacity:0;transform:scale(.8) translateY(8px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+.stats{display:flex;justify-content:center;gap:20px;margin:10px 0;font-size:12px;color:var(--sub)}
+.stat{display:flex;align-items:center;gap:4px}
+.stat-v{font-weight:700;color:var(--pink)}
+.actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:8px 0}
+.btn{width:44px;height:44px;border-radius:50%;background:var(--card);border:1px solid rgba(0,0,0,.06);
+  font-size:20px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;
+  position:relative;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.btn:active{transform:scale(.85);opacity:.8}
+.btn .badge{position:absolute;top:-4px;right:-4px;background:var(--pink);color:#fff;font-size:9px;
+  border-radius:8px;padding:1px 5px;min-width:16px;text-align:center}
+.page{display:none}
+.page.active{display:block}
+.wardrobe{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}
+.w-item{background:var(--card);border-radius:12px;padding:10px;text-align:center;font-size:24px;
+  cursor:pointer;border:2px solid transparent;transition:all .15s}
+.w-item.owned{border-color:var(--pink)}
+.w-item:active{transform:scale(.9)}
+.w-item .price{font-size:10px;color:var(--sub);margin-top:2px}
+.collection-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.c-item{background:var(--card);border-radius:12px;padding:10px;text-align:center;font-size:22px}
+.c-item .count{font-size:10px;color:var(--sub)}
+.checkin-btn{display:block;width:100%;padding:14px;border-radius:16px;background:linear-gradient(135deg,#e91e63,#f59e0b);
+  color:#fff;border:none;font-size:15px;font-weight:600;cursor:pointer;margin:10px 0}
+.checkin-btn:active{opacity:.8}
+.checkin-btn.done{background:#ddd;color:#999;cursor:default}
+.gacha-btn{display:block;width:100%;padding:14px;border-radius:16px;
+  background:linear-gradient(135deg,#7c4dff,#e040fb);color:#fff;border:none;font-size:15px;
+  font-weight:600;cursor:pointer;margin:6px 0}
+.gacha-btn:active{opacity:.8}
+.hearts{position:fixed;pointer-events:none;z-index:20}
+.heart{position:absolute;font-size:24px;animation:floatUp 1.5s ease-out forwards}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-150px) scale(.3) rotate(20deg)}}
+.confetti{position:fixed;font-size:20px;pointer-events:none;z-index:30;animation:cFall 2s ease-out forwards}
+@keyframes cFall{0%{opacity:1;transform:translate(0,-20px) rotate(0)}100%{opacity:0;transform:translate(var(--cx),100vh) rotate(var(--cr))}}
+.toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);
+  color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:50;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+.modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:100;
+  display:none;align-items:center;justify-content:center}
 .modal.show{display:flex}
-.modal-box{background:#fff;border-radius:20px;padding:30px;text-align:center;max-width:320px;width:90%}
-.modal-box h2{font-size:28px;margin-bottom:8px}
-.modal-box p{color:#666;font-size:14px;margin-bottom:16px}
-.modal-box button{padding:10px 30px;background:#e91e63;color:#fff;border:none;border-radius:20px;font-size:15px;cursor:pointer}
-.score-board{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.9);padding:8px 20px;border-radius:20px;font-size:14px;font-weight:700;z-index:40;display:none;box-shadow:0 2px 12px rgba(0,0,0,.1)}
-.score-board.show{display:block}
-.cursor-dog{position:fixed;font-size:40px;pointer-events:none;z-index:100;transition:transform .1s;display:none}
+.modal-box{background:var(--card);border-radius:20px;padding:24px;text-align:center;max-width:300px;width:90%}
+.modal-box h2{font-size:30px;margin-bottom:8px}
+.modal-box p{color:var(--sub);font-size:14px;margin-bottom:14px;line-height:1.6}
+.modal-box button{padding:10px 28px;background:var(--pink);color:#fff;border:none;border-radius:20px;font-size:14px;cursor:pointer}
+.polaroid{background:#fff;padding:16px 16px 40px;border-radius:4px;box-shadow:0 4px 16px rgba(0,0,0,.15);text-align:center;display:inline-block}
+.polaroid .p-dog{font-size:80px}
+.polaroid .p-text{font-size:13px;margin-top:8px;color:#666}
+.polaroid .p-date{font-size:10px;color:#bbb;margin-top:4px}
+.rain-drop{position:fixed;font-size:16px;pointer-events:none;animation:rain linear forwards;z-index:1}
+@keyframes rain{0%{transform:translateY(-20px);opacity:.6}100%{transform:translateY(105vh);opacity:0}}
+.snow-flake{position:fixed;font-size:16px;pointer-events:none;animation:snow linear forwards;z-index:1}
+@keyframes snow{0%{transform:translateY(-20px) rotate(0)}100%{transform:translateY(105vh) rotate(360deg)}}
 </style>
 </head>
 <body class="day" id="body">
-<div class="score-board" id="scoreBoard">🎯 <span id="scoreVal">0</span> | 接🍖小游戏</div>
-<div class="card">
-  <div class="dog-container" id="dogContainer">
-    <div class="dog" onclick="petDog(event)" id="dog">🐕</div>
+<div class="hug-overlay" id="hugOverlay" onclick="endHug()">
+  <div class="hug-dog" id="hugDog">🐕</div>
+  <div class="hug-text" id="hugText">抱抱就好...</div>
+  <div class="hug-sub">轻触任意位置退出</div>
+</div>
+<div class="container">
+  <!-- 头部 -->
+  <div class="header">
+    <div class="level" id="levelInfo">Lv1 陌生柴犬</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn" style="width:36px;height:36px;font-size:16px" onclick="navTo('home')">🏠</button>
+      <button class="btn" style="width:36px;height:36px;font-size:16px" onclick="navTo('wardrobe')">👗</button>
+      <button class="btn" style="width:36px;height:36px;font-size:16px" onclick="navTo('collection')">📔</button>
+    </div>
   </div>
-  <div class="bubble" id="bubble"></div>
-  <div class="hint">👆 戳柴犬 | 🍖 喂食 | 🎮 接骨头</div>
-  <div class="stats">
-    <div class="stat">❤️ <span class="stat-val" id="happiness">100</span></div>
-    <div class="stat">🦴 <span class="stat-val" id="treats">3</span></div>
-    <div class="stat">🐾 <span class="stat-val" id="pets">0</span></div>
+  <div class="level-bar"><div class="level-fill" id="levelBar" style="width:0%"></div></div>
+
+  <!-- 主页 -->
+  <div class="page active" id="pageHome">
+    <div class="dog-area" id="dogArea">
+      <div class="dog-wrap" onmousedown="startPet()" ontouchstart="startPet()"
+           onmouseup="endPet()" ontouchend="endPet()" onclick="tapDog(event)"
+           oncontextmenu="return false">
+        <div class="accessory hat" id="accHat" style="display:none"></div>
+        <div class="accessory glasses" id="accGlasses" style="display:none"></div>
+        <div class="accessory bow" id="accBow" style="display:none"></div>
+        <div class="dog" id="dog">🐕</div>
+      </div>
+      <div class="mood" id="mood"></div>
+    </div>
+    <div class="bubble" id="bubble"></div>
+    <div class="stats">
+      <div class="stat">❤️ <span class="stat-v" id="sAffection">0</span></div>
+      <div class="stat">🦴 <span class="stat-v" id="sTreats">3</span></div>
+      <div class="stat">📅 <span class="stat-v" id="sDays">1</span>天</div>
+      <div class="stat">🔥 <span class="stat-v" id="sStreak">1</span></div>
+    </div>
+    <div class="actions">
+      <button class="btn" onclick="feedDog(event)" title="喂食"><span class="badge" id="treatBadge">3</span>🍖</button>
+      <button class="btn" onclick="startGame()" id="gameBtn" title="游戏">🎮</button>
+      <button class="btn" onclick="sendLove()" title="情书">💌</button>
+      <button class="btn" onclick="switchTheme()" title="主题">🎨</button>
+      <button class="btn" onclick="toggleMusic()" id="musicBtn">🔊</button>
+    </div>
+    <button class="checkin-btn" id="checkinBtn" onclick="doCheckin()">🎁 每日签到</button>
+    <button class="gacha-btn" onclick="doGacha()">🎰 抽卡 (5🦴)</button>
   </div>
-  <div class="controls">
-    <button class="btn" onclick="switchTheme('day')">☀️</button>
-    <button class="btn" onclick="switchTheme('sunset')">🌅</button>
-    <button class="btn" onclick="switchTheme('night')">🌙</button>
-    <button class="btn" onclick="throwTreat(event)"><span class="badge" id="treatBadge">3</span>🍖</button>
-    <button class="btn" onclick="startGame()" id="gameBtn">🎮</button>
-    <button class="btn" onclick="shareCard()">💌</button>
-    <button class="btn" onclick="toggleMusic()" id="musicBtn">🔊</button>
+
+  <!-- 衣柜页 -->
+  <div class="page" id="pageWardrobe">
+    <div style="font-weight:600;margin-bottom:10px">👗 衣柜</div>
+    <div class="wardrobe" id="wardrobe"></div>
+    <button class="checkin-btn" style="background:var(--card);color:var(--text);margin-top:10px" onclick="navTo('home')">← 返回</button>
+  </div>
+
+  <!-- 收藏册 -->
+  <div class="page" id="pageCollection">
+    <div style="font-weight:600;margin-bottom:10px">📔 收藏册</div>
+    <div class="collection-grid" id="collection"></div>
+    <button class="checkin-btn" style="background:var(--card);color:var(--text);margin-top:10px" onclick="navTo('home')">← 返回</button>
   </div>
 </div>
 <div class="hearts" id="hearts"></div>
-<div class="modal" id="modal">
-  <div class="modal-box">
-    <h2 id="modalIcon">🎉</h2>
-    <p id="modalMsg"></p>
-    <button onclick="document.getElementById('modal').classList.remove('show')">知道啦 ✨</button>
-  </div>
+<div class="toast" id="toast"></div>
+<div class="modal" id="modal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="modal-box"><h2 id="modalIcon"></h2><p id="modalMsg"></p><button onclick="document.getElementById('modal').classList.remove('show')">知道啦 ✨</button></div>
 </div>
-<div class="cursor-dog" id="cursorDog">🐕</div>
-
 <script>
-const dogs=['🐕','🐶','🐩','🦮','🐕‍🦺','🐾']
-let state={happiness:100,treats:3,pets:0,dogIdx:0,music:true,size:1,gameActive:false,score:0}
-let audioCtx=null
+// ===== DATA & STATE =====
+const K='shiba_data_v5'
+let S=JSON.parse(localStorage.getItem(K)||JSON.stringify({
+  treats:3,affection:0,level:1,pets:0,days:1,streak:1,kisses:25,
+  lastCheckin:'',wardrobe:{},equipped:{},collection:{},highScore:0,
+  firstOpen:new Date().toISOString(),music:true,theme:'day'
+}))
+if(!S.firstOpen)S.firstOpen=new Date().toISOString()
+if(!S.wardrobe)S.wardrobe={}
+if(!S.equipped)S.equipped={}
+if(!S.collection)S.collection={}
 
-document.addEventListener('click',()=>{
-  if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)()
-  if(audioCtx.state==='suspended')audioCtx.resume()
-},{once:true})
+function save(){localStorage.setItem(K,JSON.stringify(S))}
 
-const msgs=["今天辛苦了喝杯水休息一下 ☕","你已经很棒了别给自己太大压力 ✨","工作只是生活的一部分你才是主角 🌸","起来伸个懒腰 🐱","偷偷告诉你今天会有好事发生 🌈","没有什么是一顿好吃的解决不了的 🍜","你的努力时间看得见 💪","今天的你也是满分选手 🥇","摸鱼三分钟效率翻一倍 🐟","打工人打工魂打完工再去浪 🌊","全世界都在催你长大我在催你早睡 🌙","你是人间四月天 ☀️","可爱的人连加班都是可爱的 🎀","下班后的快乐在等你了 🍻","好运正在派送中请保持心情通畅 📦","追光的人自己也会身披光芒 ✨","白天有说有笑晚上睡个好觉 💤","今天不想上班明天也不想想 🤪"]
-const treats=['🍖','🍗','🍩','🧀','🍎','🥩','🍰','🧁']
-const ach={10:{icon:'🌟',msg:'柴犬之友！送你一朵小花'},25:{icon:'🏆',msg:'狗狗达人！柴犬想跟你回家了'},50:{icon:'👑',msg:'传说级铲屎官！'}}
-let rapidTaps=0,rapidTimer=null
+// ===== PET TIMER (holds for hug mode) =====
+let holdTimer=null,holdStart=0,isHolding=false
 
-// 🔮 快速连戳3下触发占卜
-function checkFortune(){
-  rapidTaps++
-  clearTimeout(rapidTimer)
-  rapidTimer=setTimeout(()=>{rapidTaps=0},800)
-  if(rapidTaps>=3){
-    rapidTaps=0
-    const fortunes=[
-      '🔮 今日宜：摸鱼、吃好吃的、被人喜欢',
-      '🌟 幸运色：粉色 | 幸运数字：你生日的那个',
-      '🍀 今天会有意外惊喜，注意查收',
-      '💫 有人在偷偷想你，想了三次',
-      '🎯 近期运势：升职加薪桃花旺',
-      '🌈 今天做任何决定都是对的',
-      '🦋 会收到一条让人开心的消息',
-      '💎 你的努力很快就会有回报了',
-      '🌸 今天的你比昨天更可爱一点点',
-      '🔥 宜表白，宜撒娇，宜收礼物',
-    ]
-    const f=fortunes[Math.floor(Math.random()*fortunes.length)]
-    showModal('🔮','柴犬占卜\n\n'+f)
-    spawnConfetti();spawnHearts(10);playHappy()
+function startPet(){isHolding=true;holdStart=Date.now()
+  holdTimer=setTimeout(()=>{if(isHolding)startHug()},3000)}
+function endPet(){isHolding=false;clearTimeout(holdTimer)}
+
+// ===== HUG MODE =====
+function startHug(){
+  const el=document.getElementById('hugOverlay')
+  document.getElementById('hugDog').textContent=S.equipped.hat||S.equipped.bow?dogs[0]:dogs[0]
+  const hugs=['抱抱就好...','今天辛苦啦。','我会一直陪着你。','没事的，有我在。',
+    '你已经很棒了。','休息一下吧。','什么都不用想。','就这样待一会儿。']
+  document.getElementById('hugText').textContent=hugs[Math.floor(Math.random()*hugs.length)]
+  el.classList.add('active')
+  state.music&&playPurr()
+}
+function endHug(){document.getElementById('hugOverlay').classList.remove('active');S.affection+=2;updateAll();save()}
+function playPurr(){
+  try{if(!audioCtx){audioCtx=new(window.AudioContext||window.webkitAudioContext)()};if(audioCtx.state==='suspended')audioCtx.resume()
+    for(let i=0;i<3;i++){setTimeout(()=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain()
+      o.connect(g);g.connect(audioCtx.destination);o.type='sine';o.frequency.value=60+Math.random()*20
+      g.gain.setValueAtTime(.04,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+1.5)
+      o.start();o.stop(audioCtx.currentTime+1.5)},i*500)}
+  }catch(e){}}
+
+// ===== DOG DATA =====
+const dogs=['🐕','🐶','🐩','🦮','🐕‍🦺']
+const moods={happy:'😊 开心',miss:'🥺 想你',sleepy:'😴 困了',hungry:'🤤 馋了',proud:'😎 得意',love:'❤️ 超开心'}
+const levels=['陌生柴犬','认识你啦','最喜欢你','永远陪你']
+const levelNames=['Lv1','Lv2','Lv3','Lv4']
+const shopItems=[
+  {id:'bow_red',name:'🎀',price:5,slot:'bow',label:'蝴蝶结'},
+  {id:'hat_small',name:'👒',price:5,slot:'hat',label:'小帽子'},
+  {id:'cap',name:'🧢',price:8,slot:'hat',label:'棒球帽'},
+  {id:'glasses',name:'🕶',price:10,slot:'glasses',label:'墨镜'},
+  {id:'bee',name:'🐝',price:15,slot:'hat',label:'蜜蜂装'},
+  {id:'santa',name:'🎄',price:20,slot:'hat',label:'圣诞帽'},
+  {id:'crown',name:'👑',price:30,slot:'hat',label:'皇冠'},
+]
+const collectibles=['🍓','🌼','🍀','⭐','🍬','❤️','🌸','💎','🎀','🦋']
+const gachaPool=[
+  {r:'SSR',t:'🌟',m:'限定皇冠！永久拥有',a:'crown',p:5},
+  {r:'SR',t:'💫',m:'超级狗粮包 +10',a:null,p:15},
+  {r:'SR',t:'🎀',m:'稀有蝴蝶结',a:'bow_red',p:15},
+  {r:'R',t:'🍖',m:'狗粮 +5',a:null,p:30},
+  {r:'R',t:'🕶',m:'酷酷墨镜',a:'glasses',p:15},
+  {r:'N',t:'🦴',m:'狗粮 +2',a:null,p:20},
+]
+const dialogues={
+  happy:['今天心情超好！','嘿嘿，好开心～','你来啦！','汪！今天也很喜欢你'],
+  miss:['好久不见...','一直在等你。','终于来了！','好想你呀'],
+  sleepy:['呼...好困','zzZ...','晚安安...','别吵，在睡觉...'],
+  hungry:['好饿...','有没有好吃的？','狗粮告急！','用狗粮唤醒我吧'],
+  proud:['嘿嘿，厉害吧！','我是最棒的！','看到我的战绩没？'],
+  love:['最最最喜欢你！','永远在一起！','你是全世界最好的！'],
+  idle:['摸摸我好吗？','今天过得怎么样？','我在这里哦。','汪～']
+}
+
+// ===== COMPUTED =====
+function getMood(){
+  const now=Date.now(),last=parseInt(localStorage.getItem('shiba_last_active')||'0')
+  const mins=(now-last)/60000
+  if(S.treats<=0&&mins<30)return'hungry'
+  if(mins<5)return'happy'
+  if(mins<60)return'miss'
+  if(mins>180)return'sleepy'
+  return'miss'
+}
+function getLevel(){if(S.affection>=300)return 3;if(S.affection>=150)return 2;if(S.affection>=50)return 1;return 0}
+function levelPct(){const l=getLevel();const reqs=[50,150,300,999];const cur=l>0?S.affection-reqs[l-1]:S.affection
+  const max=l>0?reqs[l]-reqs[l-1]:reqs[0];return Math.min(100,Math.round(cur/max*100))}
+
+// ===== AUDIO =====
+let audioCtx=null,state={music:S.music}
+document.addEventListener('click',()=>{if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume()},{once:true})
+
+function playBark(){if(!state.music)return;try{if(!audioCtx||audioCtx.state==='suspended')audioCtx?.resume();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.type='sawtooth';o.frequency.setValueAtTime(500,audioCtx.currentTime);o.frequency.exponentialRampToValueAtTime(150,audioCtx.currentTime+.2);g.gain.setValueAtTime(.15,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+.25);o.start();o.stop(audioCtx.currentTime+.25)}catch(e){}}
+function playHappy(){if(!state.music)return;try{if(!audioCtx||audioCtx.state==='suspended')audioCtx?.resume();[523,659,784].forEach((f,i)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(.1,audioCtx.currentTime+i*.12);g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+.3+i*.12);o.start(audioCtx.currentTime+i*.12);o.stop(audioCtx.currentTime+.3+i*.12)})}catch(e){}}
+
+// ===== TAP DOG =====
+function tapDog(e){
+  if(isHolding)return;S.pets++;S.affection++;save()
+  const dog=document.getElementById('dog');dog.classList.add('bounce');setTimeout(()=>dog.classList.remove('bounce'),400)
+  const mood=getMood();const pool=dialogues[mood]||dialogues.idle
+  const msg=pool[Math.floor(Math.random()*pool.length)]
+  showBubble(msg);spawnHearts(3+Math.floor(Math.random()*3));playBark()
+  // Random collectible drop (15%)
+  if(Math.random()<.15){const c=collectibles[Math.floor(Math.random()*collectibles.length)];S.collection[c]=(S.collection[c]||0)+1;save();toast('✨ 获得了 '+c)}
+  checkLevelUp();updateAll();localStorage.setItem('shiba_last_active',Date.now())
+}
+
+function checkLevelUp(){
+  const newLvl=getLevel();if(newLvl>S.level){S.level=newLvl
+    showModal('🎉','升级啦！\n\n'+levelNames[newLvl]+' '+levels[newLvl]);spawnConfetti();playHappy()}}
+
+// ===== FEED =====
+function feedDog(e){
+  if(S.treats<=0){toast('🦴 狗粮不够！试试签到和游戏');return}
+  S.treats--;S.affection+=3;save()
+  if(e){const t=document.createElement('span');t.style.cssText='position:fixed;font-size:28px;pointer-events:none;z-index:50;animation:throwAnim 1s ease-in forwards;left:'+e.clientX+'px;top:'+e.clientY+'px;--dx:'+(Math.random()*200-100)+'px;--dy:'+(Math.random()*-100-40)+'px';document.getElementById('hearts').appendChild(t);t.textContent='🍖';setTimeout(()=>t.remove(),1100)}
+  showBubble('好吃好吃！谢谢 🍖');spawnHearts(6);playHappy();checkLevelUp();updateAll()
+}
+// Throw treat animation
+const style=document.createElement('style');style.textContent='@keyframes throwAnim{0%{opacity:1;transform:translate(0,0) rotate(0)}50%{opacity:1;transform:translate(var(--dx),var(--dy)) rotate(360deg)}100%{opacity:0;transform:translate(calc(var(--dx)*2),calc(var(--dy)*1.5+60px)) rotate(720deg)}}';document.head.appendChild(style)
+
+// ===== LOVE NOTE =====
+function sendLove(){
+  const notes=['有人悄悄把你放在心尖上 ✨','你今天笑起来一定很好看','别太累，有人在心疼你','你的存在就是小世界的礼物 🎁','柴犬闻到甜甜的味道了——是你','你是今天最值得被温柔对待的人','偷偷放一颗糖在你口袋里了 🍬','加班也挡不住你发光的样子','有人想你了，但不敢说','今天的你也值得被喜欢一百遍','好运正在派送中，收件人是你 📦','你比今天的晚霞还要好看一万倍 🌅']
+  const love=notes[Math.floor(Math.random()*notes.length)]
+  showBubble('💌<br>'+love+'<br><span style=font-size:11px;color:#ccc>——柴犬偷偷塞的</span>')
+  spawnHearts(10);playHappy()
+}
+
+// ===== DAILY CHECKIN =====
+function doCheckin(){
+  const today=new Date().toDateString()
+  if(S.lastCheckin===today){toast('今天已经签到过啦！');return}
+  // Streak
+  const yesterday=new Date(Date.now()-864e5).toDateString()
+  if(S.lastCheckin===yesterday)S.streak++;else S.streak=1
+  S.lastCheckin=today;S.days++
+  // Rewards
+  let bonus=3;if(S.streak>=30)bonus=20;else if(S.streak>=15)bonus=12;else if(S.streak>=7)bonus=8;else if(S.streak>=3)bonus=5
+  S.treats+=bonus;S.affection+=5
+  // Streak rewards
+  let extra=''
+  if(S.streak===3){extra=' 🎀 获得蝴蝶结！';S.wardrobe['bow_red']=true}
+  if(S.streak===7)extra=' 👒 获得小帽子！';if(!extra&&S.streak===7){S.wardrobe['hat_small']=true;extra=' 👒 获得小帽子！'}
+  if(S.streak===15)extra=' 👑 获得皇冠！';if(!extra&&S.streak===15){S.wardrobe['crown']=true;extra=' 👑 获得皇冠！'}
+  if(S.streak===30)extra=' 🕶 获得墨镜！';if(!extra&&S.streak===30){S.wardrobe['glasses']=true;extra=' 🕶 获得墨镜！'}
+  save()
+  showModal('🎁','签到成功！\n\n+'+bonus+' 🦴'+extra+'\n\n连续 '+S.streak+' 天！')
+  spawnConfetti();spawnHearts(12);playHappy();updateAll()
+}
+
+// ===== GACHA =====
+function doGacha(){
+  if(S.treats<5){toast('需要 5🦴');return}
+  S.treats-=5;save()
+  const r=Math.random()*100;let cum=0,prize=null
+  for(const p of gachaPool){cum+=p.p;if(r<cum){prize=p;break}}
+  if(!prize)prize=gachaPool[gachaPool.length-1]
+  let msg=prize.t+' '+prize.r+'!\n'+prize.m
+  if(prize.a){S.wardrobe[prize.a]=true;msg+='\n已加入衣柜！'}
+  else S.treats+=prize.a?0:2 // N/R give treats
+  save()
+  showModal(prize.r==='SSR'?'🌟':'🎰',msg)
+  if(prize.r==='SSR'){spawnConfetti();spawnHearts(20);playHappy()}
+  updateAll()
+}
+
+// ===== SWITCH THEME =====
+function switchTheme(){
+  const themes=['day','sunset','night','rain']
+  const idx=themes.indexOf(S.theme||'day')
+  S.theme=themes[(idx+1)%themes.length];save()
+  document.getElementById('body').className=S.theme
+  if(S.theme==='rain')spawnRain()
+}
+function spawnRain(){for(let i=0;i<30;i++)setTimeout(()=>{const d=document.createElement('span');d.className='rain-drop';d.textContent='💧';d.style.left=Math.random()*100+'%';d.style.animationDuration=(1.5+Math.random()*1.5)+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),3000)},i*80)}
+
+// ===== WARDROBE =====
+function equipItem(item){
+  if(!S.wardrobe[item.id]){// Buy
+    if(S.treats<item.price){toast('🦴 不够！需要 '+item.price+' 狗粮');return}
+    S.treats-=item.price;S.wardrobe[item.id]=true
   }
+  // Toggle equip
+  if(S.equipped[item.slot]===item.id)S.equipped[item.slot]=null
+  else S.equipped[item.slot]=item.id
+  save();renderWardrobe();updateDogAppearance()
+}
+function renderWardrobe(){
+  const el=document.getElementById('wardrobe')
+  el.innerHTML=shopItems.map(i=>{const owned=S.wardrobe[i.id];const eq=S.equipped[i.slot]===i.id
+    return'<div class="w-item'+(owned?' owned':'')+(eq?'" style="border-color:#f59e0b"':'')+'" onclick="equipItem('+JSON.stringify(i).replace(/"/g,'&quot;')+')">'+i.name+'<div class=price>'+(!owned?i.price+'🦴':eq?'✓':'穿')+'</div></div>'}).join('')
+}
+function updateDogAppearance(){
+  document.getElementById('accHat').style.display=S.equipped.hat?'block':'none'
+  document.getElementById('accHat').textContent=shopItems.find(i=>i.id===S.equipped.hat)?.name||''
+  document.getElementById('accGlasses').style.display=S.equipped.glasses?'block':'none'
+  document.getElementById('accGlasses').textContent='🕶'
+  document.getElementById('accBow').style.display=S.equipped.bow?'block':'none'
+  document.getElementById('accBow').textContent='🎀'
 }
 
-function playBark(){
-  if(!state.music)return
-  try{
-    if(!audioCtx)return
-    if(audioCtx.state==='suspended')audioCtx.resume()
-    const o=audioCtx.createOscillator(),g=audioCtx.createGain()
-    o.connect(g);g.connect(audioCtx.destination)
-    o.type='sawtooth';o.frequency.setValueAtTime(500,audioCtx.currentTime)
-    o.frequency.exponentialRampToValueAtTime(150,audioCtx.currentTime+.2)
-    g.gain.setValueAtTime(.2,audioCtx.currentTime)
-    g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+.25)
-    o.start();o.stop(audioCtx.currentTime+.25)
-  }catch(e){}
+// ===== COLLECTION =====
+function renderCollection(){
+  const el=document.getElementById('collection')
+  el.innerHTML=collectibles.map(c=>'<div class="c-item">'+c+'<div class=count>'+(S.collection[c]||0)+'个</div></div>').join('')
 }
 
-function playHappy(){
-  if(!state.music)return
-  try{
-    if(!audioCtx||audioCtx.state==='suspended')audioCtx.resume()
-    [523,659,784].forEach((f,i)=>{
-      const o=audioCtx.createOscillator(),g=audioCtx.createGain()
-      o.connect(g);g.connect(audioCtx.destination)
-      o.type='triangle';o.frequency.value=f
-      g.gain.setValueAtTime(.12,audioCtx.currentTime+i*.15)
-      g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+.4+i*.15)
-      o.start(audioCtx.currentTime+i*.15);o.stop(audioCtx.currentTime+.4+i*.15)
-    })
-  }catch(e){}
-}
-
-function petDog(e){
-  if(!audioCtx){audioCtx=new(window.AudioContext||window.webkitAudioContext)()}
-  if(audioCtx.state==='suspended')audioCtx.resume()
-  if(state.gameActive)return // 游戏模式，不触发狗
-  
-  checkFortune() // 快速连戳触发占卜
-  
-  const dog=document.getElementById('dog')
-  const anims=['bounce','shake','happy']
-  dog.classList.add(anims[Math.floor(Math.random()*anims.length)])
-  setTimeout(()=>anims.forEach(a=>dog.classList.remove(a)),600)
-  
-  state.pets++
-  if(state.pets%5===0){state.treats=Math.min(state.treats+1,10);spawnHearts(5)}
-  updateStats()
-  
-  const b=document.getElementById('bubble')
-  b.classList.remove('show');void b.offsetWidth
-  b.textContent=msgs[Math.floor(Math.random()*msgs.length)]
-  b.classList.add('show')
-  
-  spawnHearts(3+Math.floor(Math.random()*4))
-  playBark()
-  
-  if(e){const rect=dog.getBoundingClientRect();spawnPaw(rect.left+rect.width/2+Math.random()*80-40,rect.top+Math.random()*40-20)}
-  if(ach[state.pets]){
-    showModal(ach[state.pets].icon,ach[state.pets].msg)
-    playHappy();spawnHearts(15);spawnConfetti()
-  }
-  if(state.pets%12===0){state.dogIdx=(state.dogIdx+1)%dogs.length;dog.textContent=dogs[state.dogIdx]}
-  state.size=1+Math.min(state.pets*.005,.5)
-  dog.style.fontSize=(120*state.size)+'px'
-}
-
-function throwTreat(e){
-  if(state.treats<=0){toast('🍖 狗粮不够！多戳柴犬赚狗粮');return}
-  state.treats--;state.happiness=Math.min(state.happiness+10,200);updateStats()
-  if(e){
-    const t=document.createElement('span');t.className='treat'
-    t.textContent=treats[Math.floor(Math.random()*treats.length)]
-    t.style.left=e.clientX+'px';t.style.top=e.clientY+'px'
-    t.style.setProperty('--dx',(Math.random()*200-100)+'px')
-    t.style.setProperty('--dy',(Math.random()*-120-40)+'px')
-    document.body.appendChild(t);setTimeout(()=>t.remove(),1300)
-  }
-  const dog=document.getElementById('dog');dog.classList.add('happy')
-  setTimeout(()=>dog.classList.remove('happy'),600)
-  spawnHearts(6);playHappy()
-}
-
-// 🎮 接骨头小游戏
-let gameTimer=null,gameInterval=null,combo=0,maxCombo=0,goldenActive=false
-
+// ===== GAME =====
+let gameActive=false,gameTimer=null,gameInterval=null,score=0,combo=0,maxCombo=0,goldenActive=false
 function startGame(){
-  if(state.gameActive){stopGame();return}
-  state.gameActive=true;state.score=0;combo=0;maxCombo=0;goldenActive=false
-  document.getElementById('body').classList.add('play')
-  document.getElementById('scoreBoard').classList.add('show')
-  document.getElementById('gameBtn').textContent='⏹'
-  document.getElementById('dog').textContent='🐶'
-  toast('🎮 接骨头！连击有加成 ⚡')
-  
-  gameInterval=setInterval(spawnBone,600)
-  gameTimer=setTimeout(stopGame,25000)
-  
-  // 10秒后出金骨头
-  setTimeout(()=>{goldenActive=true;toast('🌟 金骨头出现了！+3分')},10000)
-  updateScore()
+  if(gameActive){stopGame();return}
+  gameActive=true;score=0;combo=0;maxCombo=0;goldenActive=false
+  document.getElementById('gameBtn').textContent='⏹';toast('🎮 接骨头！')
+  gameInterval=setInterval(spawnBone,700);gameTimer=setTimeout(stopGame,25000)
+  setTimeout(()=>{goldenActive=true;toast('🌟 金骨头！')},10000)
 }
-
 function spawnBone(){
-  if(!state.gameActive)return
-  const b=document.createElement('span')
-  b.className='falling'
-  
-  // 金骨头概率
-  const isGolden=goldenActive && Math.random()<.2
-  b.textContent=isGolden?'🌟':'🍖'
-  b.dataset.points=isGolden?'3':'1'
-  b.style.left=Math.random()*90+'%'
-  b.style.animationDuration=(isGolden?1.5:2.5+Math.random()*2)+'s'
-  b.style.zIndex='999'
-  b.style.pointerEvents='auto'
-  b.style.fontSize=isGolden?'40px':'30px'
-  b.onclick=function(e){e.stopPropagation();catchBone(e,b)}
-  document.body.appendChild(b)
-  setTimeout(()=>b.remove(),6000)
+  if(!gameActive)return;const b=document.createElement('span')
+  const isG=goldenActive&&Math.random()<.2
+  b.textContent=isG?'🌟':'🍖';b.dataset.pts=isG?'3':'1'
+  b.style.cssText='position:fixed;font-size:'+(isG?'40':'28')+'px;pointer-events:auto;z-index:999;cursor:pointer;left:'+Math.random()*90+'%;top:-20px;animation:fall '+(isG?1.5:2.5+Math.random()*2)+'s linear forwards'
+  b.onclick=function(ev){ev.stopPropagation();catchBone(ev,b)}
+  document.body.appendChild(b);setTimeout(()=>b.remove(),6000)
 }
-
 function catchBone(e,boneEl){
-  if(!state.gameActive)return
-  const pts=parseInt(boneEl.dataset.points||'1')
+  if(!gameActive)return;const pts=parseInt(boneEl.dataset.pts||'1')
   combo++;if(combo>maxCombo)maxCombo=combo
-  
-  // 连击加分
-  let bonus=0
-  if(combo>=10)bonus=3
-  else if(combo>=5)bonus=2
-  else if(combo>=3)bonus=1
-  
-  state.score+=pts+bonus
-  updateScore()
-  boneEl.remove()
-  
-  // 特效
-  const n=pts+bonus>1?6:3
-  spawnHearts(n)
-  playDing()
-  
-  // 连击提示
-  if(combo===3)toast('🔥 3连击！')
-  if(combo===5)toast('⚡ 5连击！+2分')
-  if(combo===10)toast('💥 10连击！！+3分')
-  
-  // 金骨头特效
-  if(pts>1){
-    spawnConfetti()
-    playHappy()
-  }
-  
-  // 连击超时重置
-  clearTimeout(window._comboTimer)
-  window._comboTimer=setTimeout(()=>{combo=0},1500)
+  let bonus=combo>=10?3:combo>=5?2:combo>=3?1:0
+  score+=pts+bonus;boneEl.remove();spawnHearts(pts+bonus>1?5:3);playHappy()
+  if(combo===3)toast('🔥 3连击！');if(combo===5)toast('⚡ 5连击！');if(combo===10)toast('💥 10连击！')
+  clearTimeout(window._ct);window._ct=setTimeout(()=>{combo=0},1500)
 }
-
-function playDing(){
-  if(!state.music)return
-  try{
-    if(!audioCtx){audioCtx=new(window.AudioContext||window.webkitAudioContext)()}
-    if(audioCtx.state==='suspended')audioCtx.resume()
-    const o=audioCtx.createOscillator(),g=audioCtx.createGain()
-    o.connect(g);g.connect(audioCtx.destination)
-    o.type='sine'
-    o.frequency.setValueAtTime(1200,audioCtx.currentTime)
-    o.frequency.setValueAtTime(1800,audioCtx.currentTime+.06)
-    g.gain.setValueAtTime(.2,audioCtx.currentTime)
-    g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+.12)
-    o.start();o.stop(audioCtx.currentTime+.12)
-  }catch(e){}
-}
-
 function stopGame(){
-  state.gameActive=false;goldenActive=false
-  clearTimeout(gameTimer);clearInterval(gameInterval);clearTimeout(window._comboTimer)
-  document.getElementById('body').classList.remove('play')
-  document.getElementById('scoreBoard').classList.remove('show')
+  gameActive=false;clearTimeout(gameTimer);clearInterval(gameInterval);clearTimeout(window._ct)
   document.getElementById('gameBtn').textContent='🎮'
-  document.getElementById('dog').textContent=dogs[state.dogIdx]
-  
-  if(state.score>0){
-    // 奖励：每5分换1个狗粮
-    const reward=Math.floor(state.score/5)
-    state.treats=Math.min(state.treats+reward,99)
-    updateStats()
-    
-    let title='🎯',msg=`得分 ${state.score} | 最高连击 ${maxCombo}x\n`
-    if(state.score>=30){title='👑';msg+='🏆 完美！+'+reward+'狗粮'}
-    else if(state.score>=15){title='🌟';msg+='👍 不错！+'+reward+'狗粮'}
-    else if(state.score>=5){title='🎯';msg+='+'+reward+'狗粮'}
-    else{title='🐶';msg+='再接再厉~'}
-    
-    showModal(title,msg)
-    spawnConfetti()
-    playHappy()
-  }
+  if(score>0){const reward=Math.floor(score/5);S.treats=Math.min(S.treats+reward,99)
+    if(score>S.highScore)S.highScore=score;save()
+    showModal('🎯','得分 '+score+' | 连击 '+maxCombo+'x\n+'+reward+' 🦴')}
   combo=0;maxCombo=0
-  updateScore()
 }
 
-function updateScore(){
-  const el=document.getElementById('scoreVal')
-  el.textContent=state.score+(combo>1?` 🔥${combo}x`:'')
+// ===== EFFECTS =====
+function spawnHearts(n){const hc=document.getElementById('hearts');const e=['💕','💖','✨','🌸','💝','🎀','💗'];for(let i=0;i<n;i++)setTimeout(()=>{const h=document.createElement('span');h.className='heart';h.textContent=e[Math.floor(Math.random()*e.length)];h.style.left=Math.random()*80+10+'%';h.style.top='85%';h.style.animationDuration=(1+Math.random()*1.5)+'s';hc.appendChild(h);setTimeout(()=>h.remove(),1800)},i*50)}
+function spawnConfetti(){const e=['🎉','🎊','✨','🌟','💫','🎀','🌸','💖'];for(let i=0;i<25;i++)setTimeout(()=>{const c=document.createElement('span');c.className='confetti';c.textContent=e[Math.floor(Math.random()*e.length)];c.style.left=Math.random()*100+'%';c.style.top='-20px';c.style.setProperty('--cx',(Math.random()*200-100)+'px');c.style.setProperty('--cr',(Math.random()*720-360)+'deg');document.body.appendChild(c);setTimeout(()=>c.remove(),2200)},i*25)}
+function showBubble(msg){const b=document.getElementById('bubble');b.classList.remove('show');void b.offsetWidth;b.innerHTML=msg;b.classList.add('show')}
+function showModal(icon,msg){document.getElementById('modalIcon').textContent=icon;document.getElementById('modalMsg').innerHTML=msg.replace(/\n/g,'<br>');document.getElementById('modal').classList.add('show')}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000)}
+function toggleMusic(){state.music=!state.music;S.music=state.music;save();document.getElementById('musicBtn').textContent=state.music?'🔊':'🔇'}
+
+// ===== NAV =====
+function navTo(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'))
+  document.getElementById('page'+{home:'Home',wardrobe:'Wardrobe',collection:'Collection'}[p]||'Home').classList.add('active')
+  if(p==='wardrobe')renderWardrobe()
+  if(p==='collection')renderCollection()
 }
 
-// 💌 柴犬送信
-function shareCard(){
-  const hour=new Date().getHours()
-  const d=dogs[state.dogIdx]
-  
-  // 情话库
-  const loveNotes=[
-    "有人悄悄把你放在心尖上 ✨",
-    "你今天笑起来一定很好看",
-    "别太累，有人在心疼你",
-    "你的存在就是这个小世界的礼物 🎁",
-    "柴犬说它闻到甜甜的味道了——是你",
-    "没有什么比你开心更重要了 💕",
-    "你是今天最值得被温柔对待的人",
-    "偷偷放一颗糖在你口袋里了 🍬",
-    "加班也挡不住你发光的样子",
-    "有人想你了，但不敢说",
-    "你一笑，柴犬尾巴就摇成螺旋桨",
-    "今天的你也值得被喜欢一百遍",
-    "累的时候回头看看，柴犬一直在",
-    "好运正在派送中，收件人是你 📦",
-    "你比今天的晚霞还要好看一万倍 🌅",
-  ]
-  
-  const love=loveNotes[Math.floor(Math.random()*loveNotes.length)]
-  
-  // 显示情书弹窗
-  const bubble=document.getElementById('bubble')
-  bubble.classList.remove('show');void bubble.offsetWidth
-  bubble.innerHTML=`<div style=text-align:center;font-size:40px;margin-bottom:6px>💌</div>${love}<div style=margin-top:8px;font-size:12px;color:#ccc>—— 柴犬偷偷塞给你的</div>`
-  bubble.classList.add('show')
-  
-  spawnHearts(8)
-  playHappy()
+// ===== UPDATE ALL =====
+function updateAll(){
+  const lvl=getLevel()
+  document.getElementById('levelInfo').textContent=levelNames[lvl]+' '+levels[lvl]
+  document.getElementById('levelBar').style.width=levelPct()+'%'
+  document.getElementById('sAffection').textContent=S.affection
+  document.getElementById('sTreats').textContent=S.treats
+  document.getElementById('sDays').textContent=S.days
+  document.getElementById('sStreak').textContent=S.streak
+  document.getElementById('treatBadge').textContent=S.treats
+  document.getElementById('mood').textContent=moods[getMood()]||''
+  const today=new Date().toDateString()
+  const cb=document.getElementById('checkinBtn')
+  if(S.lastCheckin===today){cb.textContent='✅ 今日已签到';cb.classList.add('done')}
+  else{cb.textContent='🎁 每日签到';cb.classList.remove('done')}
+  updateDogAppearance()
 }
 
-function spawnPaw(x,y){
-  const p=document.createElement('span');p.className='paw';p.textContent='🐾'
-  p.style.left=x+'px';p.style.top=y+'px'
-  document.body.appendChild(p);setTimeout(()=>p.remove(),3000)
-}
+// ===== IDLE ANIMATIONS =====
+setInterval(()=>{
+  if(!isHolding&&!gameActive){const dog=document.getElementById('dog')
+    if(Math.random()<.3){dog.classList.add('wag');setTimeout(()=>dog.classList.remove('wag'),300)
+      if(Math.random()<.2)showBubble(dialogues.idle[Math.floor(Math.random()*dialogues.idle.length)])}}
+},15000)
 
-function spawnHearts(n){
-  const hc=document.getElementById('hearts')
-  const emojis=['💕','💖','✨','🌸','💝','🎀','💗','🩷','🌷']
-  for(let i=0;i<n;i++)setTimeout(()=>{
-    const h=document.createElement('span');h.className='heart'
-    h.textContent=emojis[Math.floor(Math.random()*emojis.length)]
-    h.style.left=Math.random()*80+10+'%';h.style.top='85%'
-    h.style.animationDuration=(1+Math.random()*1.5)+'s'
-    hc.appendChild(h);setTimeout(()=>h.remove(),1800)
-  },i*60)
-}
-
-function spawnConfetti(){
-  const emojis=['🎉','🎊','✨','🌟','💫','🎀','🌸','💖']
-  for(let i=0;i<30;i++)setTimeout(()=>{
-    const c=document.createElement('span');c.className='confetti'
-    c.textContent=emojis[Math.floor(Math.random()*emojis.length)]
-    c.style.left=Math.random()*100+'%';c.style.top='-20px'
-    c.style.setProperty('--cx',(Math.random()*200-100)+'px')
-    c.style.setProperty('--cr',(Math.random()*720-360)+'deg')
-    document.body.appendChild(c);setTimeout(()=>c.remove(),2200)
-  },i*30)
-}
-
-function updateStats(){
-  document.getElementById('happiness').textContent=state.happiness
-  document.getElementById('treats').textContent=state.treats
-  document.getElementById('pets').textContent=state.pets
-  document.getElementById('treatBadge').textContent=state.treats
-  state.happiness=Math.max(0,state.happiness-.5)
-}
-
-function switchTheme(t){document.getElementById('body').className=t;toast('✨')}
-function toggleMusic(){state.music=!state.music;document.getElementById('musicBtn').textContent=state.music?'🔊':'🔇'}
-function showModal(icon,msg){document.getElementById('modalIcon').textContent=icon;document.getElementById('modalMsg').textContent=msg;document.getElementById('modal').classList.add('show')}
-function toast(msg){const t=document.getElementById('bubble');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800)}
-
-setInterval(()=>{state.happiness=Math.max(20,state.happiness-.1);updateStats()},10000)
-updateStats()
-
-// 🌙 晚上10点后自动切换夜景
-const h=new Date().getHours()
-if(h>=22||h<6)document.getElementById('body').className='night'
+// ===== INIT =====
+document.getElementById('body').className=S.theme||'day'
+updateAll()
+localStorage.setItem('shiba_last_active',Date.now())
 </script>
 </body>
 </html>
