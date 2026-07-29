@@ -309,53 +309,40 @@ function updateScore(){
   el.textContent=state.score+(combo>1?` 🔥${combo}x`:'')
 }
 
-// 💌 分享卡片
+// 💌 柴犬送信
 function shareCard(){
   const hour=new Date().getHours()
   const d=dogs[state.dogIdx]
   
-  const morning=["早上好呀，今天也要元气满满 ☀️","今天的阳光和你一样温柔 🌤️","早～柴犬说它梦到你了 💭"]
-  const noon=["午饭吃了没？别饿着自己 🍱","中午休息一下，下午才有力气摸鱼 ☕","柴犬提醒：该恰饭了！🍜"]
-  const afternoon=["打工累了吧？柴犬给你加油 💪","还有一会儿就下班了，坚持住 ⏰","偷偷告诉你，今天的你很棒 ✨"]
-  const evening=["下班！今天的烦恼到此为止 🍻","辛苦了，晚上好好犒劳自己 🌙","柴犬牌晚安已送达，请签收 💤"]
+  // 情话库
+  const loveNotes=[
+    "有人悄悄把你放在心尖上 ✨",
+    "你今天笑起来一定很好看",
+    "别太累，有人在心疼你",
+    "你的存在就是这个小世界的礼物 🎁",
+    "柴犬说它闻到甜甜的味道了——是你",
+    "没有什么比你开心更重要了 💕",
+    "你是今天最值得被温柔对待的人",
+    "偷偷放一颗糖在你口袋里了 🍬",
+    "加班也挡不住你发光的样子",
+    "有人想你了，但不敢说",
+    "你一笑，柴犬尾巴就摇成螺旋桨",
+    "今天的你也值得被喜欢一百遍",
+    "累的时候回头看看，柴犬一直在",
+    "好运正在派送中，收件人是你 📦",
+    "你比今天的晚霞还要好看一万倍 🌅",
+  ]
   
-  let msgs=afternoon
-  if(hour<10)msgs=morning
-  else if(hour<13)msgs=noon
-  else if(hour<18)msgs=afternoon
-  else msgs=evening
+  const love=loveNotes[Math.floor(Math.random()*loveNotes.length)]
   
-  const line=msgs[Math.floor(Math.random()*msgs.length)]
+  // 显示情书弹窗
+  const bubble=document.getElementById('bubble')
+  bubble.classList.remove('show');void bubble.offsetWidth
+  bubble.innerHTML=`<div style=text-align:center;font-size:40px;margin-bottom:6px>💌</div>${love}<div style=margin-top:8px;font-size:12px;color:#ccc>—— 柴犬偷偷塞给你的</div>`
+  bubble.classList.add('show')
   
-  let extra=''
-  if(state.pets>=50)extra='（这只柴犬已经跟你混得很熟了 🐾）'
-  else if(state.pets>=20)extra='（柴犬说它开始喜欢你了 💕）'
-  else if(state.pets>=5)extra='（新朋友你好 👋）'
-  
-  const text=d+' '+line+'\n'+extra+'\n\n你也来戳 👉 '+location.href
-  
-  // 先显示气泡预览
-  const b=document.getElementById('bubble')
-  b.classList.remove('show');void b.offsetWidth
-  b.innerHTML='📋 已复制！<br><span style=font-size:12px;color:#999>'+line+'</span>'
-  b.classList.add('show')
-  
-  // 复制到剪贴板
-  if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(text).then(()=>{
-      toast('📋 复制好了，去粘贴吧！')
-    }).catch(()=>{
-      toast('📋 长按复制这段话发给TA')
-    })
-  }else{
-    // 降级方案：创建临时文本框
-    const ta=document.createElement('textarea')
-    ta.value=text;ta.style.position='fixed';ta.style.opacity='0'
-    document.body.appendChild(ta);ta.select()
-    document.execCommand('copy');ta.remove()
-    toast('📋 复制好了！')
-  }
-  playHappy();spawnHearts(5)
+  spawnHearts(8)
+  playHappy()
 }
 
 function spawnPaw(x,y){
