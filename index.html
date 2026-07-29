@@ -622,12 +622,52 @@ const Modules = {
     },
     close(){ document.getElementById('polaroidOverlay').classList.remove('active') },
     share(){
+      // Generate polaroid as image
+      const card=document.querySelector('.polaroid-card')
       const msg=document.getElementById('pMsg').textContent
       const date=document.getElementById('pDate').textContent
-      const text='🐕 柴犬拍立得\n'+msg+'\n'+date+'\n\n'+location.href
-      if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(text).then(()=>FX.toast('📋 已复制分享文案！')).catch(()=>FX.toast('长按屏幕截图保存吧 🐕'))
-      }else{FX.toast('📸 截图保存吧！')}
+      const dogEmoji=document.getElementById('pDog').textContent
+      
+      // Create canvas for polaroid
+      const canvas=document.createElement('canvas')
+      canvas.width=600;canvas.height=800
+      const ctx=canvas.getContext('2d')
+      
+      // Background
+      ctx.fillStyle='#fffdf7';ctx.fillRect(0,0,600,800)
+      // Shadow border
+      ctx.fillStyle='#fff';ctx.fillRect(30,30,540,700)
+      
+      // Dog emoji (large)
+      ctx.font='160px serif';ctx.textAlign='center'
+      ctx.fillText(dogEmoji,300,240)
+      
+      // Accessories
+      const eq=Store.get('equipped')
+      ctx.font='48px serif'
+      if(eq.hat){const item=Cat.wardrobe.items.find(i=>i.id===eq.hat);if(item)ctx.fillText(item.emoji,300,145)}
+      if(eq.glasses)ctx.fillText('🕶',300,200)
+      if(eq.bow)ctx.fillText('🎀',395,195)
+      
+      // Message
+      ctx.fillStyle='#555';ctx.font='italic 28px Georgia,serif';ctx.textAlign='center'
+      ctx.fillText(msg,300,400)
+      
+      // Date
+      ctx.fillStyle='#bbb';ctx.font='18px sans-serif'
+      ctx.fillText(date,300,480)
+      
+      // Stamp
+      ctx.save();ctx.translate(480,720);ctx.rotate(-15*Math.PI/180)
+      ctx.fillStyle='#e91e63';ctx.font='bold 32px Georgia,serif'
+      ctx.fillText('🐕',0,0);ctx.restore()
+      
+      // Download
+      canvas.toBlob(blob=>{
+        const url=URL.createObjectURL(blob)
+        const a=document.createElement('a');a.href=url;a.download='柴犬拍立得_'+date.replace(/[\/.]/g,'-')+'.png'
+        a.click();URL.revokeObjectURL(url);FX.toast('📸 图片已保存！')
+      },'image/png')
     },
   },
 }
