@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>戳一下 🐕</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{display:flex;justify-content:center;align-items:center;min-height:100dvh;font-family:-apple-system,sans-serif;overflow:hidden;transition:background .5s}
+body.day{background:linear-gradient(135deg,#fce4ec,#e8eaf6)}
+body.night{background:linear-gradient(135deg,#1a1a2e,#16213e);color:#e0e8f4}
+body.sunset{background:linear-gradient(135deg,#ffe0b2,#ffccbc)}
+.card{text-align:center;max-width:380px;padding:20px;position:relative}
+.dog-wrap{position:relative;display:inline-block}
+.dog{font-size:110px;cursor:pointer;transition:transform .2s;user-select:none;display:inline-block;position:relative}
+.dog:active{transform:scale(.88)}
+.dog.bounce{animation:bounce .4s ease}
+.dog.spin{animation:spin .6s ease}
+@keyframes bounce{0%,100%{transform:translateY(0)}30%{transform:translateY(-24px)}60%{transform:translateY(-8px)}}
+@keyframes spin{0%{transform:rotate(0) scale(1)}50%{transform:rotate(15deg) scale(1.1)}100%{transform:rotate(0) scale(1)}}
+.stars{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:24px;opacity:0;transition:all .6s;pointer-events:none}
+.stars.show{opacity:1;top:-40px}
+.bubble{background:#fff;border-radius:20px;padding:16px 20px;font-size:15px;color:#333;box-shadow:0 4px 20px rgba(0,0,0,.1);margin-top:16px;display:none;animation:popIn .4s ease;line-height:1.6;position:relative}
+body.night .bubble{background:#2a2a4a;color:#e0e0f0}
+body.sunset .bubble{background:#fff8e1;color:#5d4037}
+.bubble.show{display:block}
+.bubble::after{content:'';position:absolute;top:-8px;left:50%;transform:translateX(-50%);border:8px solid transparent;border-bottom-color:#fff}
+body.night .bubble::after{border-bottom-color:#2a2a4a}
+body.sunset .bubble::after{border-bottom-color:#fff8e1}
+@keyframes popIn{0%{opacity:0;transform:scale(.7) translateY(10px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+.hint{color:#999;font-size:12px;margin-top:14px}
+.counter{font-size:11px;color:#bbb;margin-top:6px;opacity:0;transition:opacity .5s}
+.counter.show{opacity:1}
+.controls{display:flex;gap:8px;justify-content:center;margin-top:20px;flex-wrap:wrap}
+.btn{font-size:20px;background:rgba(255,255,255,.6);border:none;border-radius:50%;width:44px;height:44px;cursor:pointer;transition:all .2s;backdrop-filter:blur(4px)}
+body.night .btn{background:rgba(255,255,255,.1)}
+.btn:active{transform:scale(.85)}
+.gift-wrap{position:relative;display:inline-block}
+.gift{position:absolute;font-size:30px;top:-30px;left:50%;animation:floatGift 1s ease-out forwards;pointer-events:none;opacity:0}
+@keyframes floatGift{0%{opacity:0;transform:translateX(-50%) scale(.3)}30%{opacity:1;transform:translateX(-50%) scale(1.2)}100%{opacity:1;transform:translateX(-50%) scale(1)}}
+.hearts{position:fixed;pointer-events:none;z-index:10}
+.heart{position:absolute;font-size:24px;animation:floatUp 1.5s ease-out forwards}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1) rotate(0)}100%{opacity:0;transform:translateY(-140px) scale(.4) rotate(20deg)}}
+/* toast */
+.toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:20;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+</style>
+</head>
+<body class="day" id="body">
+<div class="card">
+  <div class="dog-wrap">
+    <div class="stars" id="stars">⭐</div>
+    <div class="dog gift-wrap" onclick="bark()" id="dog">🐕</div>
+    <div class="gift" id="gift"></div>
+  </div>
+  <div class="bubble" id="bubble"></div>
+  <div class="hint">👆 戳柴犬</div>
+  <div class="counter" id="counter"></div>
+  <div class="controls">
+    <button class="btn" onclick="switchTheme('day')" title="白天">☀️</button>
+    <button class="btn" onclick="switchTheme('sunset')" title="黄昏">🌅</button>
+    <button class="btn" onclick="switchTheme('night')" title="晚上">🌙</button>
+    <button class="btn" onclick="sendGift()" title="送礼物">🎁</button>
+  </div>
+</div>
+<div class="hearts" id="hearts"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const dogEmojis = ['🐕','🐶','🐩','🦮','🐕‍🦺']
+let clicks = 0
+let dogIndex = 0
+
+const msgs = [
+  "今天辛苦了，喝杯水休息一下 ☕",
+  "你已经很棒了，别给自己太大压力 ✨",
+  "工作只是生活的一部分，你才是主角 🌸",
+  "这个点还在忙？快起来伸个懒腰 🐱",
+  "偷偷告诉你：今天会有好事发生 🌈",
+  "没有什么是一顿好吃的解决不了的 🍜",
+  "你的努力，时间看得见 💪",
+  "今天的你也是满分选手 🥇",
+  "摸鱼三分钟，效率翻一倍 🐟",
+  "打工人打工魂，打完工再去浪 🌊",
+  "全世界都在催你长大我在催你早睡 🌙",
+  "你是人间四月天 ☀️",
+  "可爱的人连加班都是可爱的 🎀",
+  "再坚持一下就周五了，虽然才周三 🥲",
+  "今天妆容很好看哦 😊",
+  "下班后的快乐在等你了 🍻",
+  "好运正在派送中，请保持心情通畅 📦",
+  "追光的人，自己也会身披光芒 ✨",
+  "白天有说有笑，晚上睡个好觉 💤",
+  "今天不想上班，明天也不想想 🤪",
+]
+
+const easterEggs = {
+  5: '🐕：你已经戳了我 5 次了！',
+  10: '🌟 解锁成就：柴犬之友！送你一朵小花 🌸',
+  20: '🏆 隐藏成就：你是今天戳狗最多的人！柴犬说它很感动 🥹',
+  50: '👑 传说成就：柴犬国王！它决定跟你回家了 🏠',
+}
+
+const gifts = ['🌸','🍰','☕','🍩','🎈','💐','🍫','🧸','🎀','💎']
+
+function bark(){
+  clicks++
+  const dog = document.getElementById('dog')
+  
+  // 随机动画
+  const anims = ['bounce','spin']
+  const anim = anims[Math.floor(Math.random()*anims.length)]
+  dog.classList.add(anim)
+  setTimeout(()=>dog.classList.remove(anim),anim==='spin'?600:400)
+  
+  // 偶尔换狗
+  if(clicks % 8 === 0){
+    dogIndex = (dogIndex+1) % dogEmojis.length
+    dog.textContent = dogEmojis[dogIndex]
+  }
+  
+  // 星星
+  const stars = document.getElementById('stars')
+  if(clicks % 3 === 0 && clicks > 0){
+    stars.textContent = ['⭐','🌟','✨','💫','🎯'][clicks%5]
+    stars.classList.add('show')
+    setTimeout(()=>stars.classList.remove('show'),800)
+  }
+  
+  // 气泡
+  const bubble = document.getElementById('bubble')
+  bubble.classList.remove('show')
+  void bubble.offsetWidth
+  const msg = msgs[Math.floor(Math.random()*msgs.length)]
+  bubble.textContent = msg
+  bubble.classList.add('show')
+  
+  // 小心心
+  spawnHearts(4 + Math.floor(Math.random()*5))
+  
+  // 彩蛋
+  if(easterEggs[clicks]){
+    setTimeout(()=>{
+      toast(easterEggs[clicks])
+      spawnHearts(10)
+    },600)
+  }
+  
+  // 计数器
+  const counter = document.getElementById('counter')
+  if(clicks >= 3){
+    counter.textContent = `你已经戳了 ${clicks} 下 🐾`
+    counter.classList.add('show')
+  }
+}
+
+function sendGift(){
+  const gift = document.getElementById('gift')
+  const emoji = gifts[Math.floor(Math.random()*gifts.length)]
+  gift.textContent = emoji
+  gift.style.opacity = '1'
+  gift.style.animation = 'none'
+  void gift.offsetWidth
+  gift.style.animation = 'floatGift 1s ease-out forwards'
+  setTimeout(()=>gift.style.opacity='0',1000)
+  spawnHearts(8)
+  toast('柴犬送你一份小礼物 💝')
+}
+
+function spawnHearts(n){
+  const hearts = document.getElementById('hearts')
+  const emojis = ['💕','💖','✨','🌸','💝','🎀','💗','🩷']
+  for(let i=0;i<n;i++){
+    setTimeout(()=>{
+      const h=document.createElement('span')
+      h.className='heart'
+      h.textContent=emojis[Math.floor(Math.random()*emojis.length)]
+      h.style.left=Math.random()*80+10+'%'
+      h.style.top='85%'
+      h.style.animationDuration=1+Math.random()*1.5+'s'
+      hearts.appendChild(h)
+      setTimeout(()=>h.remove(),1800)
+    },i*60)
+  }
+}
+
+function switchTheme(t){
+  const body = document.getElementById('body')
+  body.className = t
+  toast('切换背景 ✨')
+}
+
+function toast(msg){
+  const t = document.getElementById('toast')
+  t.textContent = msg
+  t.classList.add('show')
+  setTimeout(()=>t.classList.remove('show'),2000)
+}
+</script>
+</body>
+</html>
