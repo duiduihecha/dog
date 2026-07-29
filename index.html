@@ -408,20 +408,14 @@ const M={
       const fb={rating:r,text:txt,time:new Date().toISOString()}
       feedbacks.push(fb)
       localStorage.setItem('shiba_feedback',JSON.stringify(feedbacks))
-      
-      // Try to send to server
-      try{
-        fetch('http://202.112.194.88:9998/exam/api/feedback',{
-          method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify(fb)
-        }).catch(()=>{})
-      }catch(e){}
-      
       this.hide()
-      const thanks=['谢谢你的反馈！柴犬会努力改进 🐕','收到啦！你真好 💕','感谢！柴犬记住了 ✨']
-      const msgs=['💌 可以复制发给开发者 👇','💌 也可以直接发给开发者哦']
-      const msg=thanks[Math.floor(Math.random()*thanks.length)]+'\n\n'+msgs[Math.floor(Math.random()*msgs.length)]+'\n⭐ '+r+'/5'+(txt?' — '+txt:'')
-      FX.modal('💌',msg);FX.hearts(8);Audio.happy()
+      
+      // Copy to clipboard so she can send
+      const copyText='🐕 柴犬反馈 ⭐'+r+'/5'+(txt?' — '+txt:'')
+      navigator.clipboard.writeText(copyText).catch(()=>{})
+      
+      FX.modal('💌','谢谢你的反馈！💕\n\n已自动复制 ⭐'+r+'/5\n发给他就能帮柴犬改进啦')
+      FX.hearts(10);Audio.happy()
     },
   },
   Wardrobe:{
