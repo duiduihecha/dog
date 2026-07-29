@@ -185,20 +185,23 @@ function throwTreat(e){
   spawnHearts(6);playHappy()
 }
 
-// 🎮 接骨头小游戏 - 点击屏幕任意位置，靠近骨头的自动接住
-let gameTimer=null,gameInterval=null
+// 🎮 接骨头小游戏
+let gameTimer=null,gameInterval=null,combo=0,maxCombo=0,goldenActive=false
 
 function startGame(){
   if(state.gameActive){stopGame();return}
-  state.gameActive=true;state.score=0
+  state.gameActive=true;state.score=0;combo=0;maxCombo=0;goldenActive=false
   document.getElementById('body').classList.add('play')
   document.getElementById('scoreBoard').classList.add('show')
   document.getElementById('gameBtn').textContent='⏹'
   document.getElementById('dog').textContent='🐶'
-  toast('🎮 点中骨头才算！')
+  toast('🎮 接骨头！连击有加成 ⚡')
   
-  gameInterval=setInterval(spawnBone,700)
+  gameInterval=setInterval(spawnBone,600)
   gameTimer=setTimeout(stopGame,25000)
+  
+  // 10秒后出金骨头
+  setTimeout(()=>{goldenActive=true;toast('🌟 金骨头出现了！+3分')},10000)
   updateScore()
 }
 
@@ -206,11 +209,16 @@ function spawnBone(){
   if(!state.gameActive)return
   const b=document.createElement('span')
   b.className='falling'
-  b.textContent='🍖'
+  
+  // 金骨头概率
+  const isGolden=goldenActive && Math.random()<.2
+  b.textContent=isGolden?'🌟':'🍖'
+  b.dataset.points=isGolden?'3':'1'
   b.style.left=Math.random()*90+'%'
-  b.style.animationDuration=(2.5+Math.random()*3)+'s'
+  b.style.animationDuration=(isGolden?1.5:2.5+Math.random()*2)+'s'
   b.style.zIndex='999'
   b.style.pointerEvents='auto'
+  b.style.fontSize=isGolden?'40px':'30px'
   b.onclick=function(e){e.stopPropagation();catchBone(e,b)}
   document.body.appendChild(b)
   setTimeout(()=>b.remove(),6000)
@@ -218,10 +226,38 @@ function spawnBone(){
 
 function catchBone(e,boneEl){
   if(!state.gameActive)return
-  state.score++;updateScore()
+  const pts=parseInt(boneEl.dataset.points||'1')
+  combo++;if(combo>maxCombo)maxCombo=combo
+  
+  // 连击加分
+  let bonus=0
+  if(combo>=10)bonus=3
+  else if(combo>=5)bonus=2
+  else if(combo>=3)bonus=1
+  
+  state.score+=pts+bonus
+  updateScore()
   boneEl.remove()
-  spawnHearts(3)
+  
+  // 特效
+  const n=pts+bonus>1?6:3
+  spawnHearts(n)
   playDing()
+  
+  // 连击提示
+  if(combo===3)toast('🔥 3连击！')
+  if(combo===5)toast('⚡ 5连击！+2分')
+  if(combo===10)toast('💥 10连击！！+3分')
+  
+  // 金骨头特效
+  if(pts>1){
+    spawnConfetti()
+    playHappy()
+  }
+  
+  // 连击超时重置
+  clearTimeout(window._comboTimer)
+  window._comboTimer=setTimeout(()=>{combo=0},1500)
 }
 
 function playDing(){
@@ -231,25 +267,47 @@ function playDing(){
     if(audioCtx.state==='suspended')audioCtx.resume()
     const o=audioCtx.createOscillator(),g=audioCtx.createGain()
     o.connect(g);g.connect(audioCtx.destination)
-    o.type='sine';o.frequency.setValueAtTime(1200,audioCtx.currentTime)
-    o.frequency.setValueAtTime(1600,audioCtx.currentTime+.05)
+    o.type='sine'
+    o.frequency.setValueAtTime(1200,audioCtx.currentTime)
+    o.frequency.setValueAtTime(1800,audioCtx.currentTime+.06)
     g.gain.setValueAtTime(.2,audioCtx.currentTime)
-    g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+.15)
-    o.start();o.stop(audioCtx.currentTime+.15)
+    g.gain.exponentialRampToValueAtTime(.01,audioCtx.currentTime+.12)
+    o.start();o.stop(audioCtx.currentTime+.12)
   }catch(e){}
 }
 
 function stopGame(){
-  state.gameActive=false
-  clearTimeout(gameTimer);clearInterval(gameInterval)
+  state.gameActive=false;goldenActive=false
+  clearTimeout(gameTimer);clearInterval(gameInterval);clearTimeout(window._comboTimer)
   document.getElementById('body').classList.remove('play')
   document.getElementById('scoreBoard').classList.remove('show')
   document.getElementById('gameBtn').textContent='🎮'
   document.getElementById('dog').textContent=dogs[state.dogIdx]
-  if(state.score>0)showModal('🎯','接住了 '+state.score+' 根骨头！太厉害了')
+  
+  if(state.score>0){
+    // 奖励：每5分换1个狗粮
+    const reward=Math.floor(state.score/5)
+    state.treats=Math.min(state.treats+reward,99)
+    updateStats()
+    
+    let title='🎯',msg=`得分 ${state.score} | 最高连击 ${maxCombo}x\n`
+    if(state.score>=30){title='👑';msg+='🏆 完美！+'+reward+'狗粮'}
+    else if(state.score>=15){title='🌟';msg+='👍 不错！+'+reward+'狗粮'}
+    else if(state.score>=5){title='🎯';msg+='+'+reward+'狗粮'}
+    else{title='🐶';msg+='再接再厉~'}
+    
+    showModal(title,msg)
+    spawnConfetti()
+    playHappy()
+  }
+  combo=0;maxCombo=0
+  updateScore()
 }
 
-function updateScore(){document.getElementById('scoreVal').textContent=state.score}
+function updateScore(){
+  const el=document.getElementById('scoreVal')
+  el.textContent=state.score+(combo>1?` 🔥${combo}x`:'')
+}
 
 // 💌 分享卡片
 async function shareCard(){
