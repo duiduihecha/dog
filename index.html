@@ -103,13 +103,6 @@ document.addEventListener('click',()=>{
   if(audioCtx.state==='suspended')audioCtx.resume()
 },{once:true})
 
-// 全局点击 - 游戏模式下接骨头
-document.addEventListener('click',(e)=>{
-  if(state.gameActive && e.target.tagName!=='BUTTON'){
-    catchBone(e)
-  }
-})
-
 const msgs=["今天辛苦了喝杯水休息一下 ☕","你已经很棒了别给自己太大压力 ✨","工作只是生活的一部分你才是主角 🌸","起来伸个懒腰 🐱","偷偷告诉你今天会有好事发生 🌈","没有什么是一顿好吃的解决不了的 🍜","你的努力时间看得见 💪","今天的你也是满分选手 🥇","摸鱼三分钟效率翻一倍 🐟","打工人打工魂打完工再去浪 🌊","全世界都在催你长大我在催你早睡 🌙","你是人间四月天 ☀️","可爱的人连加班都是可爱的 🎀","下班后的快乐在等你了 🍻","好运正在派送中请保持心情通畅 📦","追光的人自己也会身披光芒 ✨","白天有说有笑晚上睡个好觉 💤","今天不想上班明天也不想想 🤪"]
 const treats=['🍖','🍗','🍩','🧀','🍎','🥩','🍰','🧁']
 const ach={10:{icon:'🌟',msg:'柴犬之友！送你一朵小花'},25:{icon:'🏆',msg:'狗狗达人！柴犬想跟你回家了'},50:{icon:'👑',msg:'传说级铲屎官！'}}
@@ -147,7 +140,7 @@ function playHappy(){
 function petDog(e){
   if(!audioCtx){audioCtx=new(window.AudioContext||window.webkitAudioContext)()}
   if(audioCtx.state==='suspended')audioCtx.resume()
-  if(state.gameActive){catchBone(e);return}
+  if(state.gameActive)return // 游戏模式，不触发狗
   
   const dog=document.getElementById('dog')
   const anims=['bounce','shake','happy']
@@ -193,18 +186,18 @@ function throwTreat(e){
 }
 
 // 🎮 接骨头小游戏 - 点击屏幕任意位置，靠近骨头的自动接住
-let gameTimer=null,gameInterval=null,bones=[]
+let gameTimer=null,gameInterval=null
 
 function startGame(){
   if(state.gameActive){stopGame();return}
-  state.gameActive=true;state.score=0;bones=[]
+  state.gameActive=true;state.score=0
   document.getElementById('body').classList.add('play')
   document.getElementById('scoreBoard').classList.add('show')
   document.getElementById('gameBtn').textContent='⏹'
   document.getElementById('dog').textContent='🐶'
-  toast('🎮 戳掉下来的骨头！')
+  toast('🎮 点中骨头才算！')
   
-  gameInterval=setInterval(spawnBone,600)
+  gameInterval=setInterval(spawnBone,700)
   gameTimer=setTimeout(stopGame,25000)
   updateScore()
 }
@@ -215,38 +208,20 @@ function spawnBone(){
   b.className='falling'
   b.textContent='🍖'
   b.style.left=Math.random()*90+'%'
-  b.style.top='-40px'
   b.style.animationDuration=(2.5+Math.random()*3)+'s'
+  b.style.zIndex='999'
   b.style.pointerEvents='auto'
-  b.style.cursor='pointer'
-  b.id='bone'+Date.now()
+  b.onclick=function(e){e.stopPropagation();catchBone(e,b)}
   document.body.appendChild(b)
-  bones.push(b)
-  setTimeout(()=>{b.remove();bones=bones.filter(x=>x!==b)},6000)
+  setTimeout(()=>b.remove(),6000)
 }
 
-function catchBone(e){
+function catchBone(e,boneEl){
   if(!state.gameActive)return
-  const cx=e.clientX,cy=e.clientY
-  // 找最近的骨头（80px内）
-  let best=null,bestDist=80
-  for(const b of bones){
-    const rect=b.getBoundingClientRect()
-    const bx=rect.left+rect.width/2,by=rect.top+rect.height/2
-    const dist=Math.sqrt((cx-bx)**2+(cy-by)**2)
-    if(dist<bestDist){bestDist=dist;best=b}
-  }
-  if(best){
-    state.score++;updateScore()
-    best.remove();bones=bones.filter(x=>x!==best)
-    spawnHearts(2)
-    // 被接住的骨头动画
-    const h=document.createElement('span');h.className='heart'
-    h.textContent='🍖✨';h.style.left=cx+'px';h.style.top=cy+'px';h.style.fontSize='32px'
-    document.getElementById('hearts').appendChild(h)
-    setTimeout(()=>h.remove(),800)
-    playDing()
-  }
+  state.score++;updateScore()
+  boneEl.remove()
+  spawnHearts(3)
+  playDing()
 }
 
 function playDing(){
