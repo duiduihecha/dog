@@ -719,10 +719,7 @@ const M={
       // Save locally
       const feedbacks=JSON.parse(localStorage.getItem('shiba_feedback')||'[]');feedbacks.push(fb);localStorage.setItem('shiba_feedback',JSON.stringify(feedbacks))
       // Send to cloud
-      const BLOB='019fae64-98d5-7785-af36-8d8c9b8e6778'
-      fetch('https://jsonblob.com/api/jsonBlob/'+BLOB).then(r=>r.json()).then(all=>{
-        all.push(fb);return fetch('https://jsonblob.com/api/jsonBlob/'+BLOB,{method:'PUT',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(all)})
-      }).catch(()=>{})
+      fetch('https://wjjkj-106-120-86-37.run.pinggy-free.link/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(fb)}).catch(()=>{})
       this.hide()
       FX.modal('💌','谢谢你的反馈！💕\n\n开发者会看到的～')
       FX.hearts(10);Audio.happy()
