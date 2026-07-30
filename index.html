@@ -100,6 +100,7 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
   <div class="dog-base" id="dogBase" onpointerdown="Input.down(event)" onpointerup="Input.up(event)" onpointerleave="Input.up(event)">🐕</div>
 </div>
 <div class="mood-text" id="moodText"></div>
+<div class="hint" id="hugHint" style="font-size:11px;color:var(--sub);text-align:center;margin-top:2px">长按柴犬 2 秒，给它一个抱抱 🤗</div>
 <div class="bubble" id="bubbleEl"></div>
 <div class="stats"><div class="stat">❤️ <span class="stat-v" id="sAffection">0</span></div><div class="stat">🦴 <span class="stat-v" id="sTreats">3</span></div><div class="stat">📅 <span class="stat-v" id="sDays">1</span>天</div><div class="stat">🔥 <span class="stat-v" id="sStreak">1</span></div></div>
 <div class="actions">
@@ -149,7 +150,7 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
 <script>
 // ==================== STORE ====================
 const S={key:'shiba_v6',d:null,
-  init(){this.d=JSON.parse(localStorage.getItem(this.key)||'{"treats":3,"affection":0,"level":1,"pets":0,"days":1,"streak":1,"lastCheckin":"","equipped":{},"collection":{},"highScore":0,"firstOpen":"'+new Date().toISOString()+'","music":true,"owned":{}}');this.save()},
+  init(){this.d=JSON.parse(localStorage.getItem(this.key)||'{"treats":3,"affection":0,"level":0,"pets":0,"days":1,"streak":1,"lastCheckin":"","equipped":{},"collection":{},"highScore":0,"firstOpen":"'+new Date().toISOString()+'","music":true,"owned":{},"onboarded":false}');this.save()},
   save(){localStorage.setItem(this.key,JSON.stringify(this.d))},
   get(k){return this.d[k]},set(k,v){this.d[k]=v;this.save()},add(k,n){this.d[k]=(this.d[k]||0)+n;this.save()},
 }
@@ -343,7 +344,7 @@ const M={
       S.add('pets',1);S.add('affection',1)
       const db=document.getElementById('dogBase')
       // Breed rotation
-      if(S.get('pets')%12===0){const cur=db.textContent,b=Breeds.filter(x=>x.emoji!==cur);if(b.length)db.textContent=b[Math.floor(Math.random()*b.length)].emoji}
+      if(S.get('pets')%12===0){const cur=db.textContent,b=Breeds.filter(x=>x.emoji!==cur);if(b.length){db.textContent=b[Math.floor(Math.random()*b.length)].emoji;FX.toast('🐾 咦，柴犬交到了新朋友～')}}
       
       // Random cute animation
       const anims=['bounce','wag','happy'];db.classList.add(anims[Math.floor(Math.random()*anims.length)]);setTimeout(()=>anims.forEach(a=>db.classList.remove(a)),600)
@@ -375,7 +376,7 @@ const M={
       if(nlvl>S.get('level')){S.set('level',nlvl);const msgs=['柴犬开始认识你了 💕','你们已经是好朋友啦 🤝','柴犬最喜欢你了！❤️','柴犬决定永远陪着你 🏠'];FX.modal('🎉','升级啦！\n\nLv'+(nlvl+1)+' '+['陌生柴犬','认识你啦','最喜欢你','永远陪你'][nlvl]+'\n\n'+msgs[nlvl]);FX.confetti();FX.hearts(20);Audio.happy()}
     },
   },
-  Hug:{start(){document.getElementById('hugTextEl').textContent=Dialogues.hug_msgs[Math.floor(Math.random()*Dialogues.hug_msgs.length)];document.getElementById('hugOverlay').classList.add('active');S.add('affection',2);UI.update();Audio.purr()},end(){document.getElementById('hugOverlay').classList.remove('active')}},
+  Hug:{start(){document.getElementById('hugTextEl').textContent=Dialogues.hug_msgs[Math.floor(Math.random()*Dialogues.hug_msgs.length)];document.getElementById('hugOverlay').classList.add('active');document.getElementById('hugHint').style.display='none';S.set('onboarded',true);S.add('affection',2);UI.update();Audio.purr()},end(){document.getElementById('hugOverlay').classList.remove('active')}},
   Feed:{run(e){if(S.get('treats')<=0){FX.toast('🦴 狗粮不够！');return}S.add('treats',-1);S.add('affection',3);FX.bubble('好吃好吃！谢谢 🍖');FX.hearts(6);Audio.happy();UI.update()}},
   Love:{run(){FX.bubble('💌<br>'+Dialogues.love_notes[Math.floor(Math.random()*Dialogues.love_notes.length)]+'<br><span style=font-size:11px;color:#ccc>——柴犬给你的小纸条</span>');FX.hearts(10);Audio.happy()}},
   Checkin:{run(){
@@ -413,7 +414,7 @@ const M={
         all.push(fb);return fetch('https://jsonblob.com/api/jsonBlob/'+BLOB,{method:'PUT',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(all)})
       }).catch(()=>{})
       this.hide()
-      FX.modal('💌','谢谢你的反馈！💕\n\n柴犬收到了～')
+      FX.modal('💌','谢谢你的反馈！💕\n\n开发者会看到的～')
       FX.hearts(10);Audio.happy()
     },
   },
