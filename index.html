@@ -168,6 +168,17 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
 <button class="polaroid-btn save" onclick="M.Feedback.submit()" style="flex:1">提交 💌</button>
 </div></div></div>
 
+<!-- POLAROID -->
+<div class="polaroid-overlay" id="polaroidOverlay" onclick="if(event.target===this)M.Polaroid.close()">
+<div class="polaroid-card">
+<div class="polaroid-dog" id="pDog">🐕</div>
+<div class="polaroid-msg" id="pMsg"></div>
+<div class="polaroid-date" id="pDate"></div>
+<div class="polaroid-actions">
+<button class="polaroid-btn close" onclick="M.Polaroid.close()">关闭</button>
+<button class="polaroid-btn save" onclick="M.Polaroid.share()">📸 保存图片</button>
+</div></div></div>
+
 <!-- ONBOARDING -->
 <div class="onboard-overlay" id="onboardOverlay">
 <div class="onboard-card">
