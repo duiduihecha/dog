@@ -86,6 +86,18 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
 .sun-beam{position:fixed;font-size:20px;pointer-events:none;z-index:1;animation:sBeam linear forwards}
 @keyframes sBeam{0%{opacity:0;transform:translateY(-20px)}30%{opacity:.5}100%{opacity:0;transform:translateY(105vh)}}
 @keyframes floatScore{0%{opacity:1;transform:translate(-50%,-50%) scale(.5)}50%{opacity:1;transform:translate(-50%,-80%) scale(1.2)}100%{opacity:0;transform:translate(-50%,-120%) scale(1)}}
+/* ====== ONBOARDING ====== */
+.onboard-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.75);z-index:300;display:none;flex-direction:column;align-items:center;justify-content:center}
+.onboard-overlay.active{display:flex}
+.onboard-card{background:var(--card);border-radius:24px;padding:24px 20px;text-align:center;max-width:300px;width:85%;animation:popIn .4s ease}
+.onboard-emoji{font-size:60px;margin-bottom:8px}
+.onboard-title{font-size:18px;font-weight:700;margin-bottom:6px;color:var(--text)}
+.onboard-desc{font-size:13px;color:var(--sub);margin-bottom:16px;line-height:1.6}
+.onboard-dots{display:flex;gap:8px;justify-content:center;margin-bottom:16px}
+.onboard-dot{width:8px;height:8px;border-radius:50%;background:#ddd;transition:all .3s}
+.onboard-dot.cur{background:var(--pink);width:24px;border-radius:4px}
+.onboard-btn{padding:12px 32px;border-radius:20px;background:var(--pink);color:#fff;border:none;font-size:15px;font-weight:600;cursor:pointer}
+.onboard-skip{color:var(--sub);font-size:12px;margin-top:10px;cursor:pointer}
 </style>
 </head>
 <body id="body">
@@ -146,7 +158,18 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
 <button class="polaroid-btn close" onclick="M.Feedback.hide()" style="flex:1">取消</button>
 <button class="polaroid-btn save" onclick="M.Feedback.submit()" style="flex:1">提交 💌</button>
 </div></div></div>
-<div class="polaroid-overlay" id="polaroidOverlay" onclick="if(event.target===this)M.Polaroid.close()"><div class="polaroid-card" style="position:relative"><div class="polaroid-dog"><span id="pDog">🐕</span></div><div class="polaroid-msg" id="pMsg"></div><div class="polaroid-date" id="pDate"></div><div style="position:absolute;bottom:12px;right:16px;font-size:14px;color:#e91e63;font-weight:700;transform:rotate(-15deg);opacity:.7;font-family:Georgia,serif">🐕</div><div class="polaroid-actions"><button class="polaroid-btn close" onclick="M.Polaroid.close()">✕</button><button class="polaroid-btn save" onclick="M.Polaroid.share()">💾</button></div></div></div>
+
+<!-- ONBOARDING -->
+<div class="onboard-overlay" id="onboardOverlay">
+<div class="onboard-card">
+  <div class="onboard-emoji" id="obEmoji">🐕</div>
+  <div class="onboard-title" id="obTitle"></div>
+  <div class="onboard-desc" id="obDesc"></div>
+  <div class="onboard-dots"><span class="onboard-dot cur" id="dot0"></span><span class="onboard-dot" id="dot1"></span><span class="onboard-dot" id="dot2"></span></div>
+  <button class="onboard-btn" id="obBtn" onclick="M.Onboard.next()">下一步 →</button>
+  <div class="onboard-skip" onclick="M.Onboard.skip()">跳过</div>
+</div></div>
+
 <script>
 // ==================== STORE ====================
 const S={key:'shiba_v6',d:null,
@@ -339,6 +362,27 @@ const Dialogues={
 
 // ==================== MODULES ====================
 const M={
+  Onboard:{
+    steps:[
+      {emoji:'🐕',title:'这是你的柴犬',desc:'点点它、摸摸它\n长按 2 秒还能给它一个抱抱 🤗'},
+      {emoji:'🍖',title:'狗粮可以干很多事',desc:'喂食让柴犬开心\n攒够狗粮还能抽卡换装 👗'},
+      {emoji:'🎁',title:'每天回来看看它',desc:'签到领奖励、接骨头玩游戏\n柴犬会一直陪着你 💕'},
+    ],
+    cur:0,
+    start(){document.getElementById('onboardOverlay').classList.add('active');this.showStep(0)},
+    showStep(i){
+      this.cur=i;const s=this.steps[i]
+      document.getElementById('obEmoji').textContent=s.emoji;document.getElementById('obTitle').textContent=s.title;document.getElementById('obDesc').textContent=s.desc
+      for(let j=0;j<3;j++)document.getElementById('dot'+j).classList.toggle('cur',j===i)
+      document.getElementById('obBtn').textContent=i===2?'开始吧 ✨':'下一步 →'
+    },
+    next(){
+      if(this.cur<2)this.showStep(this.cur+1);else this.skip()
+    },
+    skip(){
+      document.getElementById('onboardOverlay').classList.remove('active');S.set('onboarded',true)
+    },
+  },
   Dog:{
     tap(){
       S.add('pets',1);S.add('affection',1)
@@ -442,6 +486,7 @@ setInterval(()=>{if(!M.Game.active&&!document.getElementById('hugOverlay').class
 
 // INIT
 S.init();Audio.init();UI.update()
+if(!S.get('onboarded'))setTimeout(()=>M.Onboard.start(),600)
 localStorage.setItem('shiba_last_active',Date.now())
 </script>
 </body>
