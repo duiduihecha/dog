@@ -103,7 +103,13 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
 <body id="body">
 <div class="hug-overlay" id="hugOverlay" onclick="M.Hug.end()"><div class="hug-dog" id="hugDogEl">🐕</div><div class="hug-text" id="hugTextEl"></div><div class="hug-sub">轻触退出</div></div>
 <div class="app">
-<div class="header"><div class="level-info" id="levelInfo">Lv1</div><div style="display:flex;gap:8px"><button class="btn" style="width:36px;height:36px;font-size:16px" onclick="UI.page('home')">🏠</button><button class="btn" style="width:36px;height:36px;font-size:16px" onclick="UI.page('wardrobe')">👗</button><button class="btn" style="width:36px;height:36px;font-size:16px" onclick="UI.page('collection')">📔</button></div></div>
+<div class="header"><div class="level-info" id="levelInfo">Lv1</div>
+<div style="display:flex;gap:8px;align-items:center">
+<span style="font-size:11px;color:var(--sub);cursor:pointer" onclick="M.Rename.show()" title="改名">✏️ <span id="dogNameDisplay">柴犬</span></span>
+<button class="btn" style="width:28px;height:28px;font-size:14px" onclick="M.Rename.toggleBreedLock()" id="breedLockBtn" title="锁定品种">🔓</button>
+<button class="btn" style="width:36px;height:36px;font-size:16px" onclick="UI.page('home')">🏠</button>
+<button class="btn" style="width:36px;height:36px;font-size:16px" onclick="UI.page('wardrobe')">👗</button>
+<button class="btn" style="width:36px;height:36px;font-size:16px" onclick="UI.page('collection')">📔</button></div></div>
 <div class="level-bar"><div class="level-fill" id="levelBar" style="width:0%"></div></div>
 
 <!-- HOME -->
@@ -173,7 +179,7 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
 <script>
 // ==================== STORE ====================
 const S={key:'shiba_v6',d:null,
-  init(){this.d=JSON.parse(localStorage.getItem(this.key)||'{"treats":3,"affection":0,"level":0,"pets":0,"days":1,"streak":1,"lastCheckin":"","equipped":{},"collection":{},"highScore":0,"firstOpen":"'+new Date().toISOString()+'","music":true,"owned":{},"onboarded":false}');this.save()},
+  init(){this.d=JSON.parse(localStorage.getItem(this.key)||'{"treats":3,"affection":0,"level":0,"pets":0,"days":1,"streak":1,"lastCheckin":"","equipped":{},"collection":{},"highScore":0,"firstOpen":"'+new Date().toISOString()+'","music":true,"owned":{},"onboarded":false,"dogName":"柴犬","breedLock":false}');this.save()},
   save(){localStorage.setItem(this.key,JSON.stringify(this.d))},
   get(k){return this.d[k]},set(k,v){this.d[k]=v;this.save()},add(k,n){this.d[k]=(this.d[k]||0)+n;this.save()},
 }
@@ -306,9 +312,11 @@ const UI={
   page(p){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById('page'+p[0].toUpperCase()+p.slice(1)).classList.add('active');if(p==='wardrobe')UI.renderWardrobe();if(p==='collection')UI.renderCollection()},
   update(){
     const a=S.get('affection'),reqs=[50,150,300,999],lvl=reqs.findIndex(r=>a<r);const cl=lvl<0?3:lvl,cpct=cl===3?100:cl===0?Math.round(a/reqs[0]*100):Math.round((a-reqs[cl-1])/(reqs[cl]-reqs[cl-1])*100)
-    const names=['陌生柴犬','认识你啦','最喜欢你','永远陪你']
-    document.getElementById('levelInfo').textContent='Lv'+(cl+1)+' '+names[cl];document.getElementById('levelBar').style.width=cpct+'%'
-    document.getElementById('sAffection').textContent=a;document.getElementById('sTreats').textContent=S.get('treats');document.getElementById('sDays').textContent=S.get('days');document.getElementById('sStreak').textContent=S.get('streak');document.getElementById('treatBadge').textContent=S.get('treats');document.getElementById('musicBtn').textContent=S.get('music')?'🔊':'🔇'
+    const names=['陌生柴犬','认识你啦','最喜欢你','永远陪你'],name=S.get('dogName')||'柴犬'
+    const nextLvl=cl<3?reqs[cl]:999,remain=nextLvl-a,hint=cl<3?` 还差 ${remain} ❤️ 升级`:''
+    document.getElementById('levelInfo').innerHTML='Lv'+(cl+1)+' '+names[cl]+' <span style="font-size:10px;color:var(--pink)">'+hint+'</span>'
+    document.getElementById('levelBar').style.width=cpct+'%'
+    document.getElementById('sAffection').textContent=a;document.getElementById('sTreats').textContent=S.get('treats');document.getElementById('sDays').textContent=S.get('days');document.getElementById('sStreak').textContent=S.get('streak');document.getElementById('treatBadge').textContent=S.get('treats');document.getElementById('musicBtn').textContent=S.get('music')?'🔊':'🔇';document.getElementById('dogNameDisplay').textContent=S.get('dogName')||'柴犬';document.getElementById('breedLockBtn').textContent=S.get('breedLock')?'🔒':'🔓'
     const now=Date.now(),last=parseInt(localStorage.getItem('shiba_last_active')||'0'),mins=(now-last)/60000
     const moods={happy:'😊 开心',miss:'🥺 想你',sleepy:'😴 困了',hungry:'🤤 馋了'}
     let mood='miss';if(S.get('treats')<=0&&mins<30)mood='hungry';else if(mins<5)mood='happy';else if(mins>180)mood='sleepy'
@@ -387,8 +395,8 @@ const M={
     tap(){
       S.add('pets',1);S.add('affection',1)
       const db=document.getElementById('dogBase')
-      // Breed rotation
-      if(S.get('pets')%12===0){const cur=db.textContent,b=Breeds.filter(x=>x.emoji!==cur);if(b.length){db.textContent=b[Math.floor(Math.random()*b.length)].emoji;FX.toast('🐾 咦，柴犬交到了新朋友～')}}
+      // Breed rotation (skip if locked)
+      if(!S.get('breedLock')&&S.get('pets')%12===0){const cur=db.textContent,b=Breeds.filter(x=>x.emoji!==cur);if(b.length){db.textContent=b[Math.floor(Math.random()*b.length)].emoji;FX.toast('🐾 咦，柴犬交到了新朋友～')}}
       
       // Random cute animation
       const anims=['bounce','wag','happy'];db.classList.add(anims[Math.floor(Math.random()*anims.length)]);setTimeout(()=>anims.forEach(a=>db.classList.remove(a)),600)
@@ -441,6 +449,18 @@ const M={
   Gacha:{run(){if(S.get('treats')<5){FX.toast('需要 5🦴');return}S.add('treats',-5);const pool=[{r:'SSR',t:'🌟',m:'限定皇冠！',a:'crown',p:5},{r:'SR',t:'💫',m:'狗粮包 +10',p:15},{r:'SR',t:'🎀',m:'稀有蝴蝶结',a:'bow_red',p:15},{r:'R',t:'🍖',m:'狗粮 +5',p:30},{r:'R',t:'🕶',m:'墨镜',a:'glasses',p:15},{r:'N',t:'🦴',m:'狗粮 +2',p:20}];const rand=Math.random()*100;let cum=0,prize=null;for(const p of pool){cum+=p.p;if(rand<cum){prize=p;break}}if(!prize)prize=pool[pool.length-1];if(prize.a){const o=S.get('owned');o[prize.a]=true;S.set('owned',o)}FX.modal(prize.r==='SSR'?'🌟':'🎰',prize.t+' '+prize.r+'!\n'+prize.m);if(prize.r==='SSR'){FX.confetti();FX.hearts(20);Audio.happy()}UI.update()}},
   Theme:{weatherIdx:0,cycle(){this.weatherIdx=(this.weatherIdx+1)%4;const ws=['☀️','🌧️','❄️','⛅'],bgs=['linear-gradient(135deg,#fff9c4,#ffe0b2)','linear-gradient(135deg,#e3f2fd,#bbdefb)','linear-gradient(135deg,#e8eaf6,#c5cae9)','linear-gradient(135deg,#f5f5f5,#e0e0e0)'];document.body.style.background=bgs[this.weatherIdx];document.querySelectorAll('.rain-drop,.snow-flake,.sun-beam').forEach(e=>e.remove());if(this.weatherIdx===0)for(let i=0;i<15;i++)setTimeout(()=>{const d=document.createElement('span');d.className='sun-beam';d.textContent='✨';d.style.left=Math.random()*100+'%';d.style.animationDuration=(2+Math.random()*3)+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),5000)},i*200);if(this.weatherIdx===1)for(let i=0;i<40;i++)setTimeout(()=>{const d=document.createElement('span');d.className='rain-drop';d.textContent='💧';d.style.left=Math.random()*100+'%';d.style.animationDuration=(1+Math.random()*1.5)+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),2500)},i*60);if(this.weatherIdx===2)for(let i=0;i<30;i++)setTimeout(()=>{const d=document.createElement('span');d.className='snow-flake';d.textContent=['❄️','🌨️','⛄'][Math.floor(Math.random()*3)];d.style.left=Math.random()*100+'%';d.style.animationDuration=(3+Math.random()*4)+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),7000)},i*120);FX.toast('天气：'+ws[this.weatherIdx])}},
   Audio:{toggle(){Audio.toggle()}},
+  Rename:{
+    show(){
+      const name=S.get('dogName')||'柴犬'
+      const n=prompt('给你的柴犬起个名字吧 🐕',name)
+      if(n&&n.trim()){S.set('dogName',n.trim());document.getElementById('dogNameDisplay').textContent=n.trim();FX.toast('✅ 改名成功！以后就叫 '+n.trim()+' 啦 💕');UI.update()}
+    },
+    toggleBreedLock(){
+      const locked=!S.get('breedLock');S.set('breedLock',locked)
+      document.getElementById('breedLockBtn').textContent=locked?'🔒':'🔓'
+      FX.toast(locked?'🔒 品种已锁定，不会变啦':'🔓 品种已解锁，柴犬可以交新朋友')
+    },
+  },
   Polaroid:{open(){const db=document.getElementById('dogBase');document.getElementById('pDog').textContent=db.textContent;document.getElementById('pMsg').textContent=Dialogues.polaroid_msgs[Math.floor(Math.random()*Dialogues.polaroid_msgs.length)];const n=new Date();document.getElementById('pDate').textContent=n.getFullYear()+'.'+(n.getMonth()+1)+'.'+n.getDate()+' #柴犬拍立得';document.getElementById('polaroidOverlay').classList.add('active')},close(){document.getElementById('polaroidOverlay').classList.remove('active')},share(){const msg=document.getElementById('pMsg').textContent,date=document.getElementById('pDate').textContent,dogEmoji=document.getElementById('pDog').textContent;const c=document.createElement('canvas');c.width=600;c.height=800;const ctx=c.getContext('2d');ctx.fillStyle='#fffdf7';ctx.fillRect(0,0,600,800);ctx.fillStyle='#fff';ctx.fillRect(30,30,540,700);ctx.font='160px serif';ctx.textAlign='center';ctx.fillText(dogEmoji,300,240);ctx.fillStyle='#555';ctx.font='italic 28px Georgia,serif';ctx.fillText(msg,300,400);ctx.fillStyle='#bbb';ctx.font='18px sans-serif';ctx.fillText(date,300,480);ctx.save();ctx.translate(480,720);ctx.rotate(-15*Math.PI/180);ctx.fillStyle='#e91e63';ctx.font='bold 32px Georgia,serif';ctx.fillText('🐕',0,0);ctx.restore();c.toBlob(blob=>{if(!blob){FX.toast('生成失败');return}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='柴犬拍立得_'+Date.now()+'.png';document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(url),5000);FX.toast('📸 已保存！');if(/iPhone|iPad|iPod/.test(navigator.userAgent))setTimeout(()=>window.open(url,'_blank'),300)},'image/png')}},
   Feedback:{
     rating:0,
