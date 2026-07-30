@@ -3,10 +3,12 @@
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><title>我的柴犬</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#fce4ec;--card:#fff;--text:#333;--sub:#999;--pink:#e91e63;--gold:#f59e0b;--purple:#7c4dff}
+:root{--bg:#fce4ec;--card:#fff;--text:#333;--sub:#999;--pink:#e91e63;--gold:#f59e0b;--purple:#7c4dff;--dog-filter:none}
 body.night{--bg:#1a1a2e;--card:#2a2a4a;--text:#e0e0f0;--sub:#888}
 body.sunset{--bg:#ffe0b2;--card:#fff8e1;--text:#5d4037;--sub:#a1887f}
 body.rain{--bg:#e3f2fd;--card:#fff;--text:#37474f;--sub:#90a4ae}
+body.day{--bg:#fce4ec;--card:#fff;--text:#333;--sub:#999}
+body.snow{--bg:#e8eaf6;--card:#fff;--text:#37474f;--sub:#90a4ae}
 body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;overflow-x:hidden;transition:background .8s;display:flex;flex-direction:column;align-items:center;user-select:none;-webkit-tap-highlight-color:transparent}
 .app{max-width:420px;width:100%;padding:16px}
 .hug-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center;opacity:0;transition:opacity .4s}
@@ -23,6 +25,12 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
 .dog-canvas{position:relative;width:200px;height:200px;margin:0 auto;display:flex;align-items:center;justify-content:center}
 .dog-base{font-size:130px;position:relative;z-index:1;transition:transform .2s}
 .dog-base.bounce{animation:bounce .4s ease}.dog-base.wag{animation:wag .3s ease}.dog-base.happy{animation:happy .6s ease}
+.dog-photo{object-fit:cover;display:block;border-radius:50%;background:#f3f3f3;filter:var(--dog-filter,none);box-shadow:0 4px 16px rgba(0,0,0,.12)}
+.dog-base .dog-photo{width:150px;height:150px}
+.hug-dog .dog-photo{width:180px;height:180px}
+.polaroid-dog .dog-photo{width:120px;height:120px}
+.onboard-emoji .dog-photo{width:90px;height:90px}
+#dog3d{width:170px;height:170px;display:block;border:none;background:transparent;touch-action:none}
 @keyframes bounce{0%,100%{transform:translateY(0)}30%{transform:translateY(-24px)}60%{transform:translateY(-8px)}}
 @keyframes wag{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
 @keyframes happy{0%{transform:scale(1)}30%{transform:scale(1.12) rotate(-6deg)}60%{transform:scale(1.08) rotate(6deg)}100%{transform:scale(1) rotate(0)}}
@@ -101,12 +109,12 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
 </style>
 </head>
 <body id="body">
-<div class="hug-overlay" id="hugOverlay" onclick="M.Hug.end()"><div class="hug-dog" id="hugDogEl">🐕</div><div class="hug-text" id="hugTextEl"></div><div class="hug-sub">轻触退出</div></div>
+<div class="hug-overlay" id="hugOverlay" onclick="M.Hug.end()"><div class="hug-dog" id="hugDogEl"><img class="dog-photo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Shiba_inu_taiki.jpg/500px-Shiba_inu_taiki.jpg" alt="柴犬"></div><div class="hug-text" id="hugTextEl"></div><div class="hug-sub">轻触退出</div></div>
 <div class="app">
 <div class="header"><div class="level-info" id="levelInfo">Lv1</div>
 <div style="display:flex;gap:8px;align-items:center">
 <span style="font-size:11px;color:var(--sub);cursor:pointer" onclick="M.Rename.show()" title="改名">✏️ <span id="dogNameDisplay">柴犬</span></span>
-<button class="btn" style="width:28px;height:28px;font-size:14px" onclick="M.Rename.toggleBreedLock()" id="breedLockBtn" title="锁定品种">🔓</button>
+<button class="btn" style="width:28px;height:28px;font-size:14px" onclick="M.Dog.cycleSkin()" id="skinBtn" title="换造型">🎨</button>
 <button class="btn" style="width:36px;height:36px;font-size:16px" onclick="UI.page('home')">🏠</button>
 <button class="btn" style="width:36px;height:36px;font-size:16px" onclick="UI.page('wardrobe')">👗</button>
 <button class="btn" style="width:36px;height:36px;font-size:16px" onclick="UI.page('collection')">📔</button></div></div>
@@ -115,7 +123,7 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
 <!-- HOME -->
 <div class="page active" id="pageHome">
 <div class="dog-canvas" id="dogCanvas">
-  <div class="dog-base" id="dogBase" onpointerdown="Input.down(event)" onpointerup="Input.up(event)" onpointerleave="Input.up(event)">🐕</div>
+  <div class="dog-base" id="dogBase" onpointerdown="Input.down(event)" onpointerup="Input.up(event)" onpointerleave="Input.up(event)"><canvas id="dog3d"></canvas></div>
 </div>
 <div class="mood-text" id="moodText"></div>
 <div class="hint" id="hugHint" style="font-size:11px;color:var(--sub);text-align:center;margin-top:2px">长按柴犬 2 秒，给它一个抱抱 🤗</div>
@@ -171,7 +179,7 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
 <!-- POLAROID -->
 <div class="polaroid-overlay" id="polaroidOverlay" onclick="if(event.target===this)M.Polaroid.close()">
 <div class="polaroid-card">
-<div class="polaroid-dog" id="pDog">🐕</div>
+<div class="polaroid-dog" id="pDog"><img class="dog-photo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Shiba_inu_taiki.jpg/500px-Shiba_inu_taiki.jpg" alt="柴犬"></div>
 <div class="polaroid-msg" id="pMsg"></div>
 <div class="polaroid-date" id="pDate"></div>
 <div class="polaroid-actions">
@@ -182,7 +190,7 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
 <!-- ONBOARDING -->
 <div class="onboard-overlay" id="onboardOverlay">
 <div class="onboard-card">
-  <div class="onboard-emoji" id="obEmoji">🐕</div>
+  <div class="onboard-emoji" id="obEmoji"><img class="dog-photo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Shiba_inu_taiki.jpg/500px-Shiba_inu_taiki.jpg" alt="柴犬"></div>
   <div class="onboard-title" id="obTitle"></div>
   <div class="onboard-desc" id="obDesc"></div>
   <div class="onboard-dots"><span class="onboard-dot cur" id="dot0"></span><span class="onboard-dot" id="dot1"></span><span class="onboard-dot" id="dot2"></span></div>
@@ -190,6 +198,7 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
   <div class="onboard-skip" onclick="M.Onboard.skip()">跳过</div>
 </div></div>
 
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script>
 // ==================== STORE ====================
 const S={key:'shiba_v6',d:null,
@@ -218,6 +227,7 @@ const Breeds=[
   {emoji:'🦮',name:'导盲犬',bodyShape:'normal'},
   {emoji:'🐕‍🦺',name:'服务犬',bodyShape:'normal'},
 ]
+const DOG_PHOTO='https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Shiba_inu_taiki.jpg/500px-Shiba_inu_taiki.jpg'
 function getBreed(){const e=document.getElementById('dogBase').textContent;return Breeds.find(b=>b.emoji===e)||Breeds[0]}
 
 // ==================== ACCESSORY CATALOG ====================
@@ -338,7 +348,7 @@ const UI={
     const nextLvl=cl<3?reqs[cl]:999,remain=nextLvl-a,hint=cl<3?` 还差 ${remain} ❤️ 升级`:''
     document.getElementById('levelInfo').innerHTML='Lv'+(cl+1)+' '+names[cl]+' <span style="font-size:10px;color:var(--pink)">'+hint+'</span>'
     document.getElementById('levelBar').style.width=cpct+'%'
-    document.getElementById('sAffection').textContent=a;document.getElementById('sTreats').textContent=S.get('treats');document.getElementById('sDays').textContent=S.get('days');document.getElementById('sStreak').textContent=S.get('streak');document.getElementById('treatBadge').textContent=S.get('treats');document.getElementById('musicBtn').textContent=S.get('music')?'🔊':'🔇';document.getElementById('dogNameDisplay').textContent=S.get('dogName')||'柴犬';document.getElementById('breedLockBtn').textContent=S.get('breedLock')?'🔒':'🔓'
+    document.getElementById('sAffection').textContent=a;document.getElementById('sTreats').textContent=S.get('treats');document.getElementById('sDays').textContent=S.get('days');document.getElementById('sStreak').textContent=S.get('streak');document.getElementById('treatBadge').textContent=S.get('treats');document.getElementById('musicBtn').textContent=S.get('music')?'🔊':'🔇';document.getElementById('dogNameDisplay').textContent=S.get('dogName')||'柴犬'
     const now=Date.now(),last=parseInt(localStorage.getItem('shiba_last_active')||'0'),mins=(now-last)/60000
     const moods={happy:'😊 开心',miss:'🥺 想你',sleepy:'😴 困了',hungry:'🤤 馋了'}
     let mood='miss';if(S.get('treats')<=0&&mins<30)mood='hungry';else if(mins<5)mood='happy';else if(mins>180)mood='sleepy'
@@ -395,6 +405,141 @@ const Dialogues={
   hug_msgs:['抱抱就好...','今天辛苦啦。','我会一直陪着你。','没事的，有我在。','你已经很棒了。','休息一下吧。'],
 }
 
+// ==================== 3D DOG (Three.js) ====================
+const FUR_PALETTES=[
+  {name:'经典柴犬',fur:0xe0922f,cream:0xf3e3c3,nose:0x2a2018},
+  {name:'黑柴',fur:0x2b2724,cream:0xd9a066,nose:0x111111},
+  {name:'奶白柴',fur:0xf0e4cb,cream:0xfff8ea,nose:0x3a3026},
+  {name:'灰柴',fur:0x9aa0a6,cream:0xe8ebed,nose:0x23262a},
+]
+const Dog3D={
+  ready:false,renderer:null,scene:null,camera:null,dog:null,body:null,tail:null,ears:[],mats:{},pal:0,state:'idle',happyT:0,baseY:0,baseRot:-0.32,
+  init(){
+    const canvas=document.getElementById('dog3d');
+    if(typeof THREE==='undefined'){this.fallback();return;}
+    try{
+      const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,preserveDrawingBuffer:true});
+      const w=canvas.clientWidth||170,h=canvas.clientHeight||170;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+      renderer.setSize(w,h,false);
+      renderer.setClearColor(0x000000,0);
+      const scene=new THREE.Scene();
+      const camera=new THREE.PerspectiveCamera(35,w/h,0.1,100);
+      scene.add(new THREE.AmbientLight(0xffffff,0.8));
+      const key=new THREE.DirectionalLight(0xffffff,1.0);key.position.set(3,6,5);scene.add(key);
+      const fill=new THREE.DirectionalLight(0xffe7cf,0.45);fill.position.set(-4,3,2);scene.add(fill);
+      const rim=new THREE.DirectionalLight(0xbfe3ff,0.35);rim.position.set(-2,4,-4);scene.add(rim);
+      const dog=this.build(scene);
+      dog.rotation.y=this.baseRot;
+      scene.add(dog);
+      this.renderer=renderer;this.scene=scene;this.camera=camera;this.dog=dog;
+      this.ready=true;
+      this.applyPalette(0);
+      this.autoFrame();
+      this.loop();
+    }catch(e){console.warn('Dog3D init failed:',e);this.fallback();}
+  },
+  build(scene){
+    const g=new THREE.Group();
+    const fur=new THREE.MeshStandardMaterial({color:0xe0922f,roughness:0.82,metalness:0});
+    const cream=new THREE.MeshStandardMaterial({color:0xf3e3c3,roughness:0.9,metalness:0});
+    const dark=new THREE.MeshStandardMaterial({color:0x2a2018,roughness:0.5,metalness:0});
+    const pink=new THREE.MeshStandardMaterial({color:0xe89a9a,roughness:0.7,metalness:0});
+    this.mats={fur,cream,dark,pink};
+
+    // Torso (horizontal loaf)
+    const torso=new THREE.Mesh(new THREE.SphereGeometry(0.78,32,24),fur);
+    torso.scale.set(0.92,0.82,1.35);torso.position.set(0,0.78,-0.1);g.add(torso);this.body=torso;
+    const chest=new THREE.Mesh(new THREE.SphereGeometry(0.62,28,22),fur);
+    chest.scale.set(0.95,0.9,0.95);chest.position.set(0,0.85,0.55);g.add(chest);
+
+    // Cream belly + chest marking (urajiro)
+    const belly=new THREE.Mesh(new THREE.SphereGeometry(0.66,24,18),cream);
+    belly.scale.set(0.8,0.7,1.2);belly.position.set(0,0.55,0.1);g.add(belly);
+    const chestMark=new THREE.Mesh(new THREE.SphereGeometry(0.5,24,18),cream);
+    chestMark.scale.set(0.85,0.95,0.6);chestMark.position.set(0,0.7,0.95);g.add(chestMark);
+
+    // Neck
+    const neck=new THREE.Mesh(new THREE.CylinderGeometry(0.36,0.42,0.5,20),fur);
+    neck.position.set(0,1.12,0.7);neck.rotation.x=-0.5;g.add(neck);
+
+    // Head
+    const head=new THREE.Mesh(new THREE.SphereGeometry(0.6,32,26),fur);
+    head.scale.set(1.0,0.95,0.95);head.position.set(0,1.45,1.05);g.add(head);
+    const cheekL=new THREE.Mesh(new THREE.SphereGeometry(0.34,20,16),cream);
+    cheekL.scale.set(0.8,0.7,0.7);cheekL.position.set(-0.34,1.32,1.18);g.add(cheekL);
+    const cheekR=new THREE.Mesh(new THREE.SphereGeometry(0.34,20,16),cream);
+    cheekR.scale.set(0.8,0.7,0.7);cheekR.position.set(0.34,1.32,1.18);g.add(cheekR);
+
+    // Muzzle / snout (elongated -> clearly a dog)
+    const muzzle=new THREE.Mesh(new THREE.SphereGeometry(0.34,24,18),cream);
+    muzzle.scale.set(0.85,0.7,1.05);muzzle.position.set(0,1.3,1.5);g.add(muzzle);
+    const snoutTop=new THREE.Mesh(new THREE.SphereGeometry(0.2,20,16),fur);
+    snoutTop.scale.set(0.8,0.6,0.9);snoutTop.position.set(0,1.42,1.42);g.add(snoutTop);
+    const nose=new THREE.Mesh(new THREE.SphereGeometry(0.12,16,12),dark);
+    nose.scale.set(1.1,0.85,1.0);nose.position.set(0,1.36,1.78);g.add(nose);
+    const mouth=new THREE.Mesh(new THREE.SphereGeometry(0.05,12,10),dark);mouth.position.set(0,1.24,1.78);g.add(mouth);
+
+    // Eyes
+    const eyeGeo=new THREE.SphereGeometry(0.105,18,14);
+    const eyeL=new THREE.Mesh(eyeGeo,dark);eyeL.position.set(-0.26,1.52,1.5);g.add(eyeL);
+    const eyeR=new THREE.Mesh(eyeGeo,dark);eyeR.position.set(0.26,1.52,1.5);g.add(eyeR);
+    const shineGeo=new THREE.SphereGeometry(0.035,10,8);
+    const shineL=new THREE.Mesh(shineGeo,cream);shineL.position.set(-0.22,1.56,1.58);g.add(shineL);
+    const shineR=new THREE.Mesh(shineGeo,cream);shineR.position.set(0.3,1.56,1.58);g.add(shineR);
+
+    // Ears (upright triangular, erect)
+    const earGeo=new THREE.ConeGeometry(0.24,0.5,18);
+    const earL=new THREE.Mesh(earGeo,fur);earL.position.set(-0.34,1.92,0.95);earL.rotation.set(-0.2,0,0.18);g.add(earL);
+    const earR=new THREE.Mesh(earGeo,fur);earR.position.set(0.34,1.92,0.95);earR.rotation.set(-0.2,0,-0.18);g.add(earR);
+    const earInGeo=new THREE.ConeGeometry(0.13,0.32,14);
+    const earInL=new THREE.Mesh(earInGeo,pink);earInL.position.set(-0.34,1.9,1.02);earInL.rotation.set(-0.2,0,0.18);g.add(earInL);
+    const earInR=new THREE.Mesh(earInGeo,pink);earInR.position.set(0.34,1.9,1.02);earInR.rotation.set(-0.2,0,-0.18);g.add(earInR);
+    this.ears=[earL,earR];
+
+    // Legs (four, distinct)
+    const legGeo=new THREE.CylinderGeometry(0.16,0.13,0.66,16);
+    const pawGeo=new THREE.SphereGeometry(0.17,16,12);
+    const legPos=[[-0.34,0.55],[0.34,0.55],[-0.4,-0.6],[0.4,-0.6]];
+    legPos.forEach(function(p){
+      const leg=new THREE.Mesh(legGeo,fur);leg.position.set(p[0],0.36,p[1]);g.add(leg);
+      const paw=new THREE.Mesh(pawGeo,cream);paw.scale.set(1,0.7,1.2);paw.position.set(p[0],0.04,p[1]+0.04);g.add(paw);
+    });
+
+    // Tail (curled over back)
+    const tail=new THREE.Group();
+    const segGeo=new THREE.SphereGeometry(0.16,14,12);
+    const tcurls=[[0,0,0,0],[0.18,0.22,0.35,0.5],[0.3,0.5,0.62,0.9],[0.28,0.82,0.82,1.2],[0.12,1.05,0.95,1.4],[-0.05,1.2,1.0,1.5]];
+    tcurls.forEach(function(c){const s=new THREE.Mesh(segGeo,fur);s.position.set(c[0],c[1],c[2]);s.scale.setScalar(1-c[3]*0.25);tail.add(s);});
+    tail.position.set(0,1.05,-0.85);g.add(tail);this.tail=tail;
+
+    // Ground shadow
+    const shadow=new THREE.Mesh(new THREE.CircleGeometry(0.95,28),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:0.12}));
+    shadow.rotation.x=-Math.PI/2;shadow.position.set(0,0.02,-0.1);g.add(shadow);
+
+    scene.add(g);
+    return g;
+  },
+  applyPalette(i){const p=FUR_PALETTES[i];if(!p)return;this.mats.fur.color.setHex(p.fur);this.mats.cream.color.setHex(p.cream);this.mats.dark.color.setHex(p.nose);},
+  cyclePalette(){this.pal=(this.pal+1)%FUR_PALETTES.length;this.applyPalette(this.pal);if(typeof FX!=='undefined'&&FX.toast)FX.toast('🎨 '+FUR_PALETTES[this.pal].name);},
+  autoFrame(){
+    try{
+      if(typeof THREE!=='undefined'&&typeof THREE.Box3==='function'){
+        const box=new THREE.Box3().setFromObject(this.dog);
+        const sphere=box.getBoundingSphere(new THREE.Sphere());
+        const r=Math.max(sphere.radius,0.5);
+        const fov=(this.camera.fov||35)*Math.PI/180;
+        const dist=(r/Math.sin(fov/2))*1.18;
+        this.camera.position.set(sphere.center.x,sphere.center.y+r*0.12,sphere.center.z+dist);
+        this.camera.lookAt(sphere.center.x,sphere.center.y,sphere.center.z);
+      }
+    }catch(e){/* keep default framing */}
+  },
+  loop(){if(!this.ready)return;requestAnimationFrame(()=>this.loop());const t=performance.now()/1000;let bob=Math.sin(t*2.0)*0.05,sway=Math.sin(t*0.55)*0.12,breath=1+Math.sin(t*1.8)*0.02;if(this.state==='happy'){const e=(performance.now()-this.happyT)/1000;if(e<0.7){bob+=Math.abs(Math.sin(e/0.7*Math.PI))*0.45;sway+=Math.sin(e*16)*0.05;}else this.state='idle';}this.dog.position.y=this.baseY+bob;this.dog.rotation.y=this.baseRot+sway;if(this.body)this.body.scale.y=0.82*breath;if(this.tail)this.tail.rotation.z=Math.sin(t*5)*0.35;if(this.ears){this.ears[0].rotation.x=-0.2+Math.sin(t*2.6)*0.05;this.ears[1].rotation.x=-0.2-Math.sin(t*2.6)*0.05;}this.renderer.render(this.scene,this.camera);},
+  snapshot(){try{return this.ready?this.renderer.domElement.toDataURL('image/png'):''}catch(e){return ''}},
+  happy(){this.state='happy';this.happyT=performance.now();},
+  fallback(){const db=document.getElementById('dogBase');if(db)db.innerHTML='<img class="dog-photo" src="'+DOG_PHOTO+'" alt="柴犬">';this.ready=false;},
+}
 // ==================== MODULES ====================
 const M={
   Onboard:{
@@ -407,7 +552,8 @@ const M={
     start(){document.getElementById('onboardOverlay').classList.add('active');this.showStep(0)},
     showStep(i){
       this.cur=i;const s=this.steps[i]
-      document.getElementById('obEmoji').textContent=s.emoji;document.getElementById('obTitle').textContent=s.title;document.getElementById('obDesc').textContent=s.desc
+      const ob=document.getElementById('obEmoji');if(s.emoji==='🐕'){const snap=(typeof Dog3D!=='undefined'&&Dog3D.ready)?Dog3D.snapshot():'';ob.innerHTML=snap?'<img class="dog-photo" src="'+snap+'">':'<img class="dog-photo" src="'+DOG_PHOTO+'" alt="柴犬">'}else ob.textContent=s.emoji
+      document.getElementById('obTitle').textContent=s.title;document.getElementById('obDesc').textContent=s.desc
       for(let j=0;j<3;j++)document.getElementById('dot'+j).classList.toggle('cur',j===i)
       document.getElementById('obBtn').textContent=i===2?'开始吧 ✨':'下一步 →'
     },
@@ -420,10 +566,10 @@ const M={
   },
   Dog:{
     tap(){
-      S.add('pets',1);S.add('affection',1)
+      S.add('pets',1);S.add('affection',1);if(typeof Dog3D!=='undefined')Dog3D.happy()
       const db=document.getElementById('dogBase')
-      // Breed rotation (skip if locked)
-      if(!S.get('breedLock')&&S.get('pets')%12===0){const cur=db.textContent,b=Breeds.filter(x=>x.emoji!==cur);if(b.length){db.textContent=b[Math.floor(Math.random()*b.length)].emoji;FX.toast('🐾 咦，柴犬交到了新朋友～')}}
+      // Delight moment every 12 pets (breed rotation retired in favour of skin switch)
+      if(S.get('pets')%12===0){FX.toast('🐾 柴犬今天格外黏你～')}
       
       // Random cute animation
       const anims=['bounce','wag','happy'];db.classList.add(anims[Math.floor(Math.random()*anims.length)]);setTimeout(()=>anims.forEach(a=>db.classList.remove(a)),600)
@@ -454,8 +600,17 @@ const M={
       const a=S.get('affection'),reqs=[50,150,300,999],nl=reqs.findIndex(r=>a<r),nlvl=nl<0?3:nl
       if(nlvl>S.get('level')){S.set('level',nlvl);const msgs=['柴犬开始认识你了 💕','你们已经是好朋友啦 🤝','柴犬最喜欢你了！❤️','柴犬决定永远陪着你 🏠'];FX.modal('🎉','升级啦！\n\nLv'+(nlvl+1)+' '+['陌生柴犬','认识你啦','最喜欢你','永远陪你'][nlvl]+'\n\n'+msgs[nlvl]);FX.confetti();FX.hearts(20);Audio.happy()}
     },
+    cycleSkin(){
+      if(typeof Dog3D!=='undefined'&&Dog3D.ready){Dog3D.cyclePalette();return}
+      const skins=['none','grayscale(1)','sepia(.55)','hue-rotate(20deg) saturate(1.3)']
+      const cur=getComputedStyle(document.documentElement).getPropertyValue('--dog-filter').trim()||'none'
+      let i=skins.indexOf(cur);if(i<0)i=0
+      const next=skins[(i+1)%skins.length]
+      document.documentElement.style.setProperty('--dog-filter',next)
+      FX.toast(next==='none'?'🎨 恢复原貌～':'🎨 换个造型～')
+    },
   },
-  Hug:{start(){document.getElementById('hugTextEl').textContent=Dialogues.hug_msgs[Math.floor(Math.random()*Dialogues.hug_msgs.length)];document.getElementById('hugOverlay').classList.add('active');document.getElementById('hugHint').style.display='none';S.set('onboarded',true);S.add('affection',2);UI.update();Audio.purr()},end(){document.getElementById('hugOverlay').classList.remove('active')}},
+  Hug:{start(){document.getElementById('hugTextEl').textContent=Dialogues.hug_msgs[Math.floor(Math.random()*Dialogues.hug_msgs.length)];const hd=document.getElementById('hugDogEl');const snap=(typeof Dog3D!=='undefined'&&Dog3D.ready)?Dog3D.snapshot():'';if(snap)hd.innerHTML='<img class="dog-photo" src="'+snap+'">';document.getElementById('hugOverlay').classList.add('active');document.getElementById('hugHint').style.display='none';S.set('onboarded',true);S.add('affection',2);UI.update();Audio.purr()},end(){document.getElementById('hugOverlay').classList.remove('active')}},
   Feed:{run(e){if(S.get('treats')<=0){FX.toast('🦴 狗粮不够！');return}S.add('treats',-1);S.add('affection',3);FX.bubble('好吃好吃！谢谢 🍖');FX.hearts(6);Audio.happy();UI.update()}},
   Love:{run(){FX.bubble('💌<br>'+Dialogues.love_notes[Math.floor(Math.random()*Dialogues.love_notes.length)]+'<br><span style=font-size:11px;color:#ccc>——柴犬给你的小纸条</span>');FX.hearts(10);Audio.happy()}},
   Checkin:{run(){
@@ -508,13 +663,13 @@ const M={
         UI.update()
       }},
   Theme:{weatherIdx:0,
-    cycle(){this.weatherIdx=(this.weatherIdx+1)%4;const themes=['day','rain','snow','cloudy']
+    cycle(){this.weatherIdx=(this.weatherIdx+1)%4;const themes=['day','rain','snow','night']
       document.getElementById('body').className=themes[this.weatherIdx]
       document.querySelectorAll('.rain-drop,.snow-flake,.sun-beam').forEach(e=>e.remove())
       if(this.weatherIdx===0)for(let i=0;i<15;i++)setTimeout(()=>{const d=document.createElement('span');d.className='sun-beam';d.textContent='✨';d.style.left=Math.random()*100+'%';d.style.animationDuration=(2+Math.random()*3)+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),5000)},i*200)
       if(this.weatherIdx===1)for(let i=0;i<40;i++)setTimeout(()=>{const d=document.createElement('span');d.className='rain-drop';d.textContent='💧';d.style.left=Math.random()*100+'%';d.style.animationDuration=(1+Math.random()*1.5)+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),2500)},i*60)
       if(this.weatherIdx===2)for(let i=0;i<30;i++)setTimeout(()=>{const d=document.createElement('span');d.className='snow-flake';d.textContent=['❄️','🌨️','⛄'][Math.floor(Math.random()*3)];d.style.left=Math.random()*100+'%';d.style.animationDuration=(3+Math.random()*4)+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),7000)},i*120)
-      FX.toast('天气：'+['☀️','🌧️','❄️','⛅'][this.weatherIdx])
+      FX.toast('天气：'+['☀️','🌧️','❄️','🌙'][this.weatherIdx])
     },
   },
   Audio:{toggle(){Audio.toggle()}},
@@ -537,7 +692,22 @@ const M={
       else{navigator.clipboard.writeText(text).then(()=>FX.toast('🔗 链接已复制，发给她吧！')).catch(()=>{})}
     },
   },
-  Polaroid:{open(){const db=document.getElementById('dogBase');document.getElementById('pDog').textContent=db.textContent;document.getElementById('pMsg').textContent=Dialogues.polaroid_msgs[Math.floor(Math.random()*Dialogues.polaroid_msgs.length)];const n=new Date();document.getElementById('pDate').textContent=n.getFullYear()+'.'+(n.getMonth()+1)+'.'+n.getDate()+' #柴犬拍立得';document.getElementById('polaroidOverlay').classList.add('active')},close(){document.getElementById('polaroidOverlay').classList.remove('active')},share(){const msg=document.getElementById('pMsg').textContent,date=document.getElementById('pDate').textContent,dogEmoji=document.getElementById('pDog').textContent;const c=document.createElement('canvas');c.width=600;c.height=800;const ctx=c.getContext('2d');ctx.fillStyle='#fffdf7';ctx.fillRect(0,0,600,800);ctx.fillStyle='#fff';ctx.fillRect(30,30,540,700);ctx.font='160px serif';ctx.textAlign='center';ctx.fillText(dogEmoji,300,240);ctx.fillStyle='#555';ctx.font='italic 28px Georgia,serif';ctx.fillText(msg,300,400);ctx.fillStyle='#bbb';ctx.font='18px sans-serif';ctx.fillText(date,300,480);ctx.save();ctx.translate(480,720);ctx.rotate(-15*Math.PI/180);ctx.fillStyle='#e91e63';ctx.font='bold 32px Georgia,serif';ctx.fillText('🐕',0,0);ctx.restore();c.toBlob(blob=>{if(!blob){FX.toast('生成失败');return}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='柴犬拍立得_'+Date.now()+'.png';document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(url),5000);FX.toast('📸 已保存！');if(/iPhone|iPad|iPod/.test(navigator.userAgent))setTimeout(()=>window.open(url,'_blank'),300)},'image/png')}},
+  Polaroid:{open(){const pd=document.getElementById('pDog');const snap=(typeof Dog3D!=='undefined'&&Dog3D.ready)?Dog3D.snapshot():'';if(snap)pd.innerHTML='<img class="dog-photo" src="'+snap+'">';document.getElementById('pMsg').textContent=Dialogues.polaroid_msgs[Math.floor(Math.random()*Dialogues.polaroid_msgs.length)];const n=new Date();document.getElementById('pDate').textContent=n.getFullYear()+'.'+(n.getMonth()+1)+'.'+n.getDate()+' #柴犬拍立得';document.getElementById('polaroidOverlay').classList.add('active')},close(){document.getElementById('polaroidOverlay').classList.remove('active')},share(){
+  const msg=document.getElementById('pMsg').textContent,date=document.getElementById('pDate').textContent
+  const c=document.createElement('canvas');c.width=600;c.height=800;const ctx=c.getContext('2d')
+  ctx.fillStyle='#fffdf7';ctx.fillRect(0,0,600,800);ctx.fillStyle='#fff';ctx.fillRect(30,30,540,700)
+  const draw=()=>{
+    ctx.fillStyle='#555';ctx.font='italic 28px Georgia,serif';ctx.textAlign='center';ctx.fillText(msg,300,400)
+    ctx.fillStyle='#bbb';ctx.font='18px sans-serif';ctx.fillText(date,300,480)
+    ctx.save();ctx.translate(480,720);ctx.rotate(-15*Math.PI/180);ctx.fillStyle='#e91e63';ctx.font='bold 32px Georgia,serif';ctx.fillText('🐕',0,0);ctx.restore()
+    const save=()=>{try{c.toBlob(blob=>{if(!blob){FX.toast('生成失败');return}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='柴犬拍立得_'+Date.now()+'.png';document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(url),5000);FX.toast('📸 已保存！');if(/iPhone|iPad|iPod/.test(navigator.userAgent))setTimeout(()=>window.open(url,'_blank'),300)},'image/png')}catch(e){FX.toast('图片跨域，无法保存，但已预览 💕')}}
+    save()
+  }
+  const img=new Image();img.crossOrigin='anonymous'
+  img.onload=()=>{ctx.save();ctx.beginPath();ctx.arc(300,200,120,0,Math.PI*2);ctx.closePath();ctx.clip();ctx.drawImage(img,180,80,240,240);ctx.restore();draw()}
+  img.onerror=()=>{ctx.font='160px serif';ctx.textAlign='center';ctx.fillText('🐕',300,240);draw()}
+  img.src=(typeof Dog3D!=='undefined'&&Dog3D.ready)?Dog3D.snapshot():DOG_PHOTO
+}},
   Feedback:{
     rating:0,
     show(){document.getElementById('feedbackModal').classList.add('show');document.querySelectorAll('#emojiRating span').forEach(s=>{s.classList.remove('sel');s.style.opacity='.4';s.style.transform='scale(1)'});document.getElementById('feedbackText').value=''},
@@ -582,7 +752,7 @@ const M={
 setInterval(()=>{if(!M.Game.active&&!document.getElementById('hugOverlay').classList.contains('active')){const db=document.getElementById('dogBase');if(Math.random()<.4){db.classList.add('wag');setTimeout(()=>db.classList.remove('wag'),300);if(Math.random()<.3)FX.bubble(Dialogues.idle[Math.floor(Math.random()*Dialogues.idle.length)])}}},10000)
 
 // INIT
-S.init();Audio.init();UI.update()
+S.init();Audio.init();UI.update();Dog3D.init()
 if(!S.get('onboarded'))setTimeout(()=>M.Onboard.start(),600)
 // Welcome back
 const last=parseInt(localStorage.getItem('shiba_last_active')||'0'),away=Math.floor((Date.now()-last)/3600000)
