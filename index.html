@@ -444,8 +444,23 @@ const M={
   }},
   Game:{active:false,timer:null,interval:null,score:0,combo:0,maxCombo:0,golden:false,easy:true,
     toggle(){this.active?this.stop():this.start()},
-    start(){this.active=true;this.score=0;this.combo=0;this.maxCombo=0;this.golden=false;document.getElementById('gameBtn').textContent='⏹';document.querySelectorAll('.actions .btn:not(#gameBtn),.big-btn').forEach(b=>{b.disabled=true;b.style.opacity='.3'});const o=document.createElement('div');o.id='gameOverlay';o.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;z-index:99;pointer-events:auto';o.onclick=e=>e.stopPropagation();document.body.appendChild(o);FX.toast('🎮 接骨头！');this.interval=setInterval(()=>this.spawn(),700);this.timer=setTimeout(()=>this.stop(),25000);setTimeout(()=>{this.golden=true;FX.toast('🌟 金骨头！')},10000)},
-    spawn(){if(!this.active)return;const b=document.createElement('span'),isG=this.golden&&Math.random()<.2;b.textContent=isG?'🌟':'🍖';b.dataset.pts=isG?'3':'1';b.className='falling-bone';b.style.left=Math.random()*90+'%';b.style.fontSize=isG?'45px':'32px';b.style.animationDuration=(isG?1.3:2+Math.random()*2)+'s';b.onclick=e=>{e.stopPropagation();this.catch(b)};document.body.appendChild(b);setTimeout(()=>b.remove(),6000)},
+    start(){
+      this.active=true;this.score=0;this.combo=0;this.maxCombo=0;this.golden=false
+      document.getElementById('gameBtn').textContent='⏹'
+      const interval=this.easy?900:600, boneSize=this.easy?'44px':'28px', boneDur=this.easy?3.5:2
+      document.querySelectorAll('.actions .btn:not(#gameBtn),.big-btn').forEach(b=>{b.disabled=true;b.style.opacity='.3'})
+      const o=document.createElement('div');o.id='gameOverlay';o.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;z-index:99;pointer-events:auto';o.onclick=e=>e.stopPropagation();document.body.appendChild(o)
+      FX.toast('🎮 接骨头！'+(this.easy?' 简单模式':' 普通模式'))
+      const self=this
+      this.interval=setInterval(()=>self.spawn(boneSize,boneDur),interval);this.timer=setTimeout(()=>this.stop(),25000)
+      setTimeout(()=>{this.golden=true;FX.toast('🌟 金骨头！')},10000)
+    },
+    spawn(boneSize,boneDur){
+      if(!this.active)return;const b=document.createElement('span'),isG=this.golden&&Math.random()<.2
+      b.textContent=isG?'🌟':'🍖';b.dataset.pts=isG?'3':'1';b.className='falling-bone'
+      b.style.left=Math.random()*90+'%';b.style.fontSize=isG?'52px':boneSize;b.style.animationDuration=(isG?1.5:boneDur+Math.random()*2)+'s'
+      b.onclick=e=>{e.stopPropagation();this.catch(b)};document.body.appendChild(b);setTimeout(()=>b.remove(),6000)
+    },
     catch(bEl){if(!this.active)return;const pts=parseInt(bEl.dataset.pts||'1');this.combo++;if(this.combo>this.maxCombo)this.maxCombo=this.combo;let bonus=this.combo>=10?3:this.combo>=5?2:this.combo>=3?1:0;this.score+=pts+bonus;bEl.remove();FX.hearts(pts+bonus>1?5:3);Audio.happy();const s=document.createElement('div');s.textContent='+'+pts+bonus;s.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:40px;font-weight:700;color:#e91e63;pointer-events:none;z-index:200;animation:floatScore .8s ease-out forwards';document.body.appendChild(s);setTimeout(()=>s.remove(),900);clearTimeout(this._ct);this._ct=setTimeout(()=>{this.combo=0},1500)},
     stop(){this.active=false;clearTimeout(this.timer);clearInterval(this.interval);clearTimeout(this._ct);document.getElementById('gameBtn').textContent='🎮';document.querySelectorAll('.actions .btn,.big-btn').forEach(b=>{b.disabled=false;b.style.opacity=''});const o=document.getElementById('gameOverlay');if(o)o.remove();if(this.score>0){const r=Math.floor(this.score/5);S.add('treats',Math.min(r,99));if(this.score>S.get('highScore'))S.set('highScore',this.score);FX.modal('🎯','得分 '+this.score+' | 连击 '+this.maxCombo+'x\n+'+r+' 🦴');UI.update()}this.combo=0;this.maxCombo=0},
     toggleDifficulty(){this.easy=!this.easy;FX.toast(this.easy?'🎮 简单模式（更大更慢）':'🎮 普通模式')},
