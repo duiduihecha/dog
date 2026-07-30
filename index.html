@@ -719,7 +719,7 @@ const M={
       // Save locally
       const feedbacks=JSON.parse(localStorage.getItem('shiba_feedback')||'[]');feedbacks.push(fb);localStorage.setItem('shiba_feedback',JSON.stringify(feedbacks))
       // Send to cloud
-      fetch('https://wjjkj-106-120-86-37.run.pinggy-free.link/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(fb)}).catch(()=>{})
+      fetch('https://rcjmf-106-120-86-37.run.pinggy-free.link/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(fb)}).catch(()=>{})
       this.hide()
       FX.modal('💌','谢谢你的反馈！💕\n\n开发者会看到的～')
       FX.hearts(10);Audio.happy()
