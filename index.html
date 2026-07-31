@@ -468,21 +468,29 @@ const M={
     daysIntoPeriod(){if(!this.isInPeriod())return 0;const cur=S.get('period').current;const start=new Date(cur.startDate),today=new Date(this.todayStr());return Math.floor((today-start)/86400000)+1},
     daysUntilNext(){const p=S.get('period');if(!p||!p.history||!p.history.length)return -1;const prefs=p.prefs;const last=p.history[p.history.length-1];const next=new Date(last.startDate);next.setDate(next.getDate()+prefs.cycleDays);const today=new Date(this.todayStr());const diff=Math.floor((next-today)/86400000);return diff>0?diff:-1},
     getCareMessage(){
-      const day=this.daysIntoPeriod(),prefs=S.get('period').prefs,pain=prefs.painLevel||'medium'
+      const day=this.daysIntoPeriod(),prefs=S.get('period').prefs,nn=prefs.nickname||'',prefix=nn?nn+'，':''
+      // PMS (5 days before)
+      const dn=this.daysUntilNext()
+      if(!this.isInPeriod()&&dn>0&&dn<=5){
+        const pms=['快到日子了，可能会有点烦躁，那是身体在提醒你该心疼自己了 💕','这几天心情可能会像过山车，没关系，我都在 🎢','预感到身体要进入特殊时期了，先好好犒劳一下自己吧 🍰','马上要到日子了，记得提前备好暖宝宝和红糖水～','身体可能会有一些小信号，别忽略它们，对自己好一点 ✨']
+        return prefix+pms[Math.floor(Math.random()*pms.length)]
+      }
+      const pain=prefs.painLevel||'medium'
       const heavy=['宝贝今天辛苦了…抱抱 🤗','今天什么都不用做，躺着就好，我在这陪着你','疼的话就蜷起来，像个小虾米一样～柴犬也经常这样','给你呼呼～呼呼～痛痛飞走 ✨','你是全世界最勇敢的小朋友']
       const medium=['今天有没有比昨天好一点点？一点点也是进步！','要不要看个搞笑视频？笑出来会舒服很多哦','奖励你熬过了最难的一天！你最棒了 🎀','来，摸摸狗头，好运蹭蹭 ✨','今天适合吃点甜的～心情会变好！']
       const light=['马上就要解放啦！再坚持一下下～','感觉怎么样？是不是活过来了哈哈','这几天辛苦你了，等结束了我给你补一个大大的拥抱','要不要出门走走？晒太阳对恢复很有帮助哦 ☀️','你这段时间真的很不容易，我全都看在眼里 💕']
       const always=['不管怎样，我都站在你这边','你的感受是合理的，不用忍着','累了就休息，不用逞强','你已经做得很好了','我在呢，随时都在']
       let pool=always
       if(day<=2)pool=[...heavy,...always];else if(day<=4)pool=[...medium,...always];else if(day<=7)pool=[...light,...always]
-      return pool[Math.floor(Math.random()*pool.length)]
+      return prefix+pool[Math.floor(Math.random()*pool.length)]
     },
     getTodayTips(){
       const prefs=S.get('period').prefs,symptoms=prefs.symptoms||[]
       const tips={cramps:'热敷小腹 15 分钟，喝点温热的姜茶 🫖',fatigue:'今天早点休息吧，睡眠是最好的修复 💤',bloating:'少吃产气的食物，温开水小口慢喝',moodSwings:'情绪波动是正常的，不是你的错 ❤️',headache:'轻轻按摩太阳穴，或者听一首舒缓的歌',backache:'用枕头垫着腰部躺一会儿'}
       const result=symptoms.filter(s=>tips[s]).map(s=>tips[s])
       if(!result.length)result.push('今天也要好好吃饭哦，不能因为不舒服就饿着自己 🍱')
-      return result.slice(0,3)
+      if(this.isInPeriod())result.push('🚫 经期少吃：冰饮/生冷/辛辣/咖啡/浓茶  ✅推荐：温热食物/红糖姜茶/香蕉/坚果')
+      return result.slice(0,4)
     },
     getTodoList(type){return type==='before'?['准备红糖/姜茶','买她喜欢的零食','备好暖宝宝/热水袋','这几天别惹她生气 😂','提前想好去哪里吃']:['早上问一句"今天怎么样？"','主动倒一杯温水','不让她提重物','忍耐力拉满','晚上帮她热敷/按摩']},
     
@@ -505,7 +513,7 @@ const M={
       if(period.history.length){const last=period.history[period.history.length-1];const nextStart=new Date(last.startDate);nextStart.setDate(nextStart.getDate()+prefs.cycleDays);for(let i=0;i<prefs.flowDays;i++){const d=new Date(nextStart);d.setDate(d.getDate()+i);const ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');predictDays.add(ds)}
         const ovDay=new Date(nextStart);ovDay.setDate(ovDay.getDate()-14);for(let i=-2;i<=2;i++){const d=new Date(ovDay);d.setDate(d.getDate()+i);const ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');ovDays.add(ds)}}
       
-      let calHTML='<div class="cal-nav"><button onclick="M.Period._calY--;M.Period.renderCal();M.Period.render()">&lt;</button><span>'+(year+'年'+month+'月')+'</span><button onclick="M.Period._calY++;M.Period.renderCal();M.Period.render()">&gt;</button></div>'
+      let calHTML='<div class="cal-nav"><button onclick="M.Period._calM--;if(M.Period._calM<0){M.Period._calM=11;M.Period._calY--}M.Period.render()">&lt;</button><span>'+(year+'年'+month+'月')+'</span><button onclick="M.Period._calM++;if(M.Period._calM>11){M.Period._calM=0;M.Period._calY++}M.Period.render()">&gt;</button></div>'
       calHTML+='<div class="cal-grid">'+['日','一','二','三','四','五','六'].map(d=>'<div class="cal-head">'+d+'</div>').join('')
       for(let i=0;i<firstDay;i++)calHTML+='<div class="cal-day other-month"></div>'
       for(let d=1;d<=lastDate;d++){const ds=year+'-'+String(month).padStart(2,'0')+'-'+String(d).padStart(2,'0');const cls=['cal-day'];if(ds===today)cls.push('today');if(periodDays.has(ds))cls.push('period-day');if(predictDays.has(ds))cls.push('predict-day');if(ovDays.has(ds))cls.push('ovulation-day');calHTML+='<div class="'+cls.join(' ')+'" onclick="M.Period._onCalDay(\''+ds+'\')">'+d+'</div>'}
@@ -520,38 +528,49 @@ const M={
       calHTML+='<button class="big-btn outline" onclick="M.Period._showStats()" style="margin-top:8px">📊 查看统计</button>'
       return calHTML
     },
-    _onCalDay(ds){const period=S.get('period');if(!period.current||period.current.endDate){period.current={startDate:ds,endDate:null,notes:''};S.set('period',period);FX.toast('🌸 已标记经期开始');UI.update()}else{period.current.endDate=ds;period.history.push({...period.current});period.current=null;S.set('period',period);FX.toast('✅ 本期经期已结束');UI.update()}this.render()},
-    endPeriod(){const period=S.get('period');if(period.current&&!period.current.endDate){period.current.endDate=this.todayStr();period.history.push({...period.current});period.current=null;S.set('period',period);FX.toast('✅ 本期经期已结束');UI.update();this.render()}},
+    _onCalDay(ds){
+      const period=S.get('period'),inP=period.current&&!period.current.endDate
+      const msg='选择操作：\n\n📅 '+ds+'\n\n'+(inP?'当前正在经期中':'')
+      const html='<div style="display:flex;flex-direction:column;gap:8px">'+
+        '<button class="big-btn" onclick="M.Period._doStartPeriod(\''+ds+'\')" style="background:var(--pink)">🩷 标记为经期开始</button>'+
+        '<button class="big-btn" onclick="M.Period._doEndPeriod(\''+ds+'\')" style="background:#f59e0b">✅ 标记为经期结束</button>'+
+        '<button class="big-btn outline" onclick="document.getElementById(\'modalEl\').classList.remove(\'show\')">取消</button></div>'
+      document.getElementById('modalIcon').textContent='📅'
+      document.getElementById('modalMsg').innerHTML=html
+      document.getElementById('modalEl').classList.add('show')
+    },
+    _doStartPeriod(ds){const period=S.get('period');period.current={startDate:ds,endDate:null,notes:''};S.set('period',period);FX.toast('🌸 已标记经期开始');UI.update();this.render();document.getElementById('modalEl').classList.remove('show')},
+    _doEndPeriod(ds){const period=S.get('period');if(period.current&&!period.current.endDate){period.current.endDate=ds;period.history.push({...period.current});period.current=null;S.set('period',period);FX.toast('✅ 本期经期已结束')}else{FX.toast('没有进行中的经期')}UI.update();this.render();document.getElementById('modalEl').classList.remove('show')},
+    endPeriod(){if(S.get('period').current&&!S.get('period').current.endDate){this._doEndPeriod(this.todayStr())}},
     
     // --- Log ---
     renderLog(){
-      const today=this.todayStr(),log=S.get('period').dailyLog||{},entry=log[today]||{mood:0,pain:0,note:''}
+      const today=this.todayStr(),log=S.get('period').dailyLog||{},entry=log[today]||{mood:0,pain:0,note:'',flow:0}
       let html='<div style="text-align:center;font-weight:600;margin-bottom:10px">'+today+'</div>'
       html+='<div class="set-label">今日心情</div><div class="mood-row">'+['😭','😢','😐','🙂','😄'].map((e,i)=>'<div class="mood-btn'+(entry.mood===i+1?' selected':'')+'" onclick="M.Period._logMood('+(i+1)+')">'+e+'</div>').join('')+'</div>'
       html+='<div class="set-label">身体不适</div><div class="pain-row">'+['无痛','轻微','明显','难受','剧烈'].map((l,i)=>'<div class="pain-btn'+(entry.pain===i?' selected':'')+'" onclick="M.Period._logPain('+i+')">'+l+'</div>').join('')+'</div>'
+      html+='<div class="set-label">经血量</div><div class="pain-row">'+[{v:1,t:'少🩸'},{v:2,t:'适中🩸🩸'},{v:3,t:'偏多🩸🩸🩸'},{v:4,t:'很多🩸🩸🩸🩸'}].map(o=>'<div class="pain-btn'+(entry.flow===o.v?' selected':'')+'" onclick="M.Period._logFlow('+o.v+')">'+o.t+'</div>').join('')+'</div>'
       html+='<input class="set-input" id="logNote" value="'+(entry.note||'')+'" placeholder="备注（选填）" style="margin-top:8px">'
       html+='<button class="big-btn" onclick="M.Period._saveLog()" style="margin-top:8px">💾 保存</button>'
       html+=this._miniChart()
       return html
     },
+    _logFlow(v){this._logCache=this._logCache||{};this._logCache.flow=v;document.querySelectorAll('.pain-row').forEach((b,i)=>{if(b.textContent.includes('🩸'))b.classList.toggle('selected',b.textContent.startsWith(['','少','适中','偏多','很多'][v]))})},
     _logMood(v){this._logCache=this._logCache||{};this._logCache.mood=v;document.querySelectorAll('.mood-btn').forEach((b,i)=>b.classList.toggle('selected',i+1===v))},
     _logPain(v){this._logCache=this._logCache||{};this._logCache.pain=v;document.querySelectorAll('.pain-btn').forEach((b,i)=>b.classList.toggle('selected',i===v))},
-    _saveLog(){const note=document.getElementById('logNote')?.value||'';const cache=this._logCache||{},today=this.todayStr(),log=S.get('period').dailyLog||{},old=log[today]||{};log[today]={mood:cache.mood||old.mood||0,pain:cache.pain!==undefined?cache.pain:old.pain||0,note};S.get('period').dailyLog=log;S.save();FX.toast('💾 已保存');this._logCache={};this.render()},
-    _miniChart(){
-      const log=S.get('period').dailyLog||{},keys=Object.keys(log).sort().slice(-7)
-      if(!keys.length)return ''
-      let html='<div style="font-size:12px;color:var(--sub);margin-top:12px">最近 7 天趋势</div><div class="mini-chart">'
-      keys.forEach(k=>{const e=log[k]||{},mh=Math.max(8,(e.mood||0)*12),pd=e.pain||0
-        html+='<div class="chart-bar" style="height:'+mh+'px">'+(pd>0?'<div class="pain-dots">'+'<div class="chart-dot" style="opacity:'+(pd*.25)+'"></div>'.repeat(pd)+'</div>':'')+'</div>'})
-      return html+'</div>'
-    },
+    _saveLog(){const note=document.getElementById('logNote')?.value||'';const cache=this._logCache||{},today=this.todayStr(),log=S.get('period').dailyLog||{},old=log[today]||{};log[today]={mood:cache.mood||old.mood||0,pain:cache.pain!==undefined?cache.pain:old.pain||0,flow:cache.flow||old.flow||0,note};S.get('period').dailyLog=log;S.save();FX.toast('💾 已保存');this._logCache={};this.render()},
+        _miniChart(){
+          const log=S.get('period').dailyLog||{},keys=Object.keys(log).sort().slice(-7)
+          if(!keys.length)return''
+          let html='<div style="font-size:12px;color:var(--sub);margin-top:12px">最近 7 天趋势</div><div class="mini-chart">'
+          keys.forEach(k=>{const e=log[k]||{},mh=Math.max(8,(e.mood||0)*12),pd=e.pain||0,fl=e.flow||0
+            html+='<div class="chart-bar" style="height:'+mh+'px;opacity:'+(.5+fl*.15)+'">'+(pd>0?'<div class="pain-dots">'+'<div class="chart-dot" style="opacity:'+(pd*.25)+'"></div>'.repeat(pd)+'</div>':'')+'</div>'})
+          html+='</div><div class="mini-chart" style="height:auto;border:none;margin-top:2px;padding-top:0">'+keys.map(k=>'<div style="flex:1;text-align:center;font-size:9px;color:var(--sub)">'+k.slice(5)+'</div>').join('')+'</div>'
+          return html
+        },
     
     // --- Care ---
     renderCare(){
-      // Daily todo reset
-      const today=this.todayStr(),period=S.get('period'),cp=period.carePushed||{}
-      if(cp._lastTodoReset!==today){const nc={};for(const k in cp)if(!k.startsWith('todo_'))nc[k]=cp[k];nc._lastTodoReset=today;period.carePushed=nc;S.set('period',period)}
-      
       let html='<div class="care-card"><h3>🐕 柴犬对她说</h3><div class="care-msg">'+this.getCareMessage()+'</div>'
       html+='<h3 style="margin-top:12px">💡 今日建议</h3>'+this.getTodayTips().map(t=>'<div class="care-tip">'+t+'</div>').join('')
       html+='<h3 style="margin-top:12px">🎵 推荐做的事</h3>'
@@ -574,15 +593,22 @@ const M={
       picked.forEach(a=>{html+='<div class="care-action">✨ '+a+'</div>'})
       html+='</div>'
       
-      // Boyfriend view
-      html+='<div class="care-card" style="margin-top:8px;border-color:rgba(245,158,11,0.2);background:linear-gradient(135deg,rgba(245,158,11,0.06),rgba(245,158,11,0.02))"><h3 style="color:#f59e0b">⚠️ 男友待办</h3>'
-      const todos=this.isInPeriod()?this.getTodoList('during'):(this.daysUntilNext()<=3&&this.daysUntilNext()>0?this.getTodoList('before'):'')
-      if(typeof todos==='string'){html+='<p style="font-size:13px;color:var(--sub)">经期不在范围内，暂无待办</p>'}
-      else{todos.forEach((t,i)=>{const ck=(S.get('period').carePushed||{})['todo_'+i]||false;html+='<div class="todo-item"><div class="todo-check'+(ck?' done':'')+'" onclick="M.Period._toggleTodo('+i+')">'+(ck?'✓':'')+'</div>'+t+'</div>'})}
+      // Boyfriend view replaced by wishes
+      const wishes=(S.get('period').wishes||[]).filter(w=>w.date===today)
+      html+='<div class="care-card" style="margin-top:8px;background:linear-gradient(135deg,rgba(124,77,255,0.06),rgba(124,77,255,0.02));border-color:rgba(124,77,255,0.15)"><h3 style="color:#7c4dff">💫 我的小愿望</h3>'
+      html+='<div style="display:flex;gap:6px;margin-bottom:8px"><input class="set-input" id="wishInput" placeholder="今天想要..." style="flex:1"><button class="btn" style="width:36px;height:36px;font-size:16px;flex-shrink:0" onclick="M.Period._addWish()">+</button></div>'
+      if(wishes.length){
+        wishes.forEach((w,i)=>{
+          html+='<div class="todo-item"><div class="todo-check'+(w.done?' done':'')+'" onclick="M.Period._toggleWish('+i+')">'+(w.done?'✓':'')+'</div><span style="'+(w.done?'text-decoration:line-through;color:var(--sub)':'')+'">'+w.text+'</span><span style="margin-left:auto;cursor:pointer;font-size:14px" onclick="M.Period._deleteWish('+i+')">🗑</span></div>'
+        })
+      }else{html+='<p style="font-size:13px;color:var(--sub)">今天还没有小愿望～写下第一个吧</p>'}
       html+='</div>'
       return html
     },
-    _toggleTodo(i){const p=S.get('period'),cp=p.carePushed||{};cp['todo_'+i]=!cp['todo_'+i];p.carePushed=cp;S.set('period',p);this.render()},
+    _addWish(){const inp=document.getElementById('wishInput');if(!inp||!inp.value.trim())return;const wishes=S.get('period').wishes||[];wishes.push({text:inp.value.trim(),done:false,date:this.todayStr()});S.get('period').wishes=wishes;S.save();inp.value='';this.render()},
+    _toggleWish(i){const wishes=S.get('period').wishes||[],w=wishes.filter(w=>w.date===this.todayStr());if(w[i]){w[i].done=!w[i].done;S.get('period').wishes=wishes;S.save();this.render()}},
+    _deleteWish(i){const wishes=S.get('period').wishes||[],w=wishes.filter(w=>w.date===this.todayStr());if(w[i]){const idx=wishes.indexOf(w[i]);if(idx>=0)wishes.splice(idx,1);S.get('period').wishes=wishes;S.save();this.render()}},
+    _toggleTodo(i){}, // deprecated, kept for backwards compat
     
     // --- Settings ---
     renderSet(){
@@ -620,7 +646,7 @@ const M={
       FX.modal('📊',msg)
     },
     _showGuide(){
-      FX.modal('📖','🌸 经期关怀使用指南\n\n📅 日历：点击日期标记经期开始/结束，粉色=经期日，浅粉=预测日\n📝 记录：每天记录心情和不适程度，底部有7天趋势图\n💕 关怀：经期中柴犬会变温柔，70%对话变暖心话；男友待办每天刷新\n⚙ 设置：昵称/周期/症状/零食偏好，所有数据只存在本地\n\n🐕 经期中柴犬会更温柔、小纸条会换成专属文案、背景变微粉\n🚨 首页🌸按钮自动提示（♡=经期中，!=即将来）')
+      FX.modal('📖','🌸 经期关怀使用指南\n\n📅 日历：点击日期选择标记开始/结束，粉色=经期日，浅粉=预测日\n📝 记录：每天记录心情、不适和经血量，底部有7天趋势图\n💕 关怀：经期中柴犬会变温柔，70%对话变暖心话\n💫 小愿望：写下今天想要的，完成打勾\n⚙ 设置：昵称/周期/症状/零食偏好，所有数据只存在本地\n\n🐕 经期中柴犬会更温柔、小纸条会换成专属文案、背景变微粉\n🚨 首页🌸按钮自动提示（♡=经期中，!=即将来）')
     },
     
     // --- Render ---
