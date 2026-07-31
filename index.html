@@ -786,7 +786,7 @@ const M={
 setInterval(()=>{if(!M.Game.active&&!document.getElementById('hugOverlay').classList.contains('active')){const db=document.getElementById('dogBase');if(Math.random()<.4){db.classList.add('wag');setTimeout(()=>db.classList.remove('wag'),300);if(Math.random()<.3)FX.bubble(Dialogues.idle[Math.floor(Math.random()*Dialogues.idle.length)])}}},10000)
 
 // INIT
-S.init();Audio.init();UI.update();M.Countdown.init();Dog3D.init()
+S.init();Audio.init();UI.update();Dog3D.init()
 if(!S.get('onboarded'))setTimeout(()=>M.Onboard.start(),600)
 // Welcome back
 const last=parseInt(localStorage.getItem('shiba_last_active')||'0'),away=Math.floor((Date.now()-last)/3600000)
