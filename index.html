@@ -464,9 +464,9 @@ const M={
     
     // --- Core helpers ---
     todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')},
-    isInPeriod(){const cur=S.get('period').current;if(!cur||!cur.startDate)return false;const t=this.todayStr();return t>=cur.startDate&&(!cur.endDate||t<=cur.endDate)},
+    isInPeriod(){const cur=S.get('period');if(!cur||!cur.current||!cur.current.startDate)return false;const t=this.todayStr();return t>=cur.current.startDate&&(!cur.current.endDate||t<=cur.current.endDate)},
     daysIntoPeriod(){if(!this.isInPeriod())return 0;const cur=S.get('period').current;const start=new Date(cur.startDate),today=new Date(this.todayStr());return Math.floor((today-start)/86400000)+1},
-    daysUntilNext(){const h=S.get('period').history;if(!h.length)return -1;const prefs=S.get('period').prefs;const last=h[h.length-1];const next=new Date(last.startDate);next.setDate(next.getDate()+prefs.cycleDays);const today=new Date(this.todayStr());const diff=Math.floor((next-today)/86400000);return diff>0?diff:-1},
+    daysUntilNext(){const p=S.get('period');if(!p||!p.history||!p.history.length)return -1;const prefs=p.prefs;const last=p.history[p.history.length-1];const next=new Date(last.startDate);next.setDate(next.getDate()+prefs.cycleDays);const today=new Date(this.todayStr());const diff=Math.floor((next-today)/86400000);return diff>0?diff:-1},
     getCareMessage(){
       const day=this.daysIntoPeriod(),prefs=S.get('period').prefs,pain=prefs.painLevel||'medium'
       const heavy=['宝贝今天辛苦了…抱抱 🤗','今天什么都不用做，躺着就好，我在这陪着你','疼的话就蜷起来，像个小虾米一样～柴犬也经常这样','给你呼呼～呼呼～痛痛飞走 ✨','你是全世界最勇敢的小朋友']
@@ -651,7 +651,10 @@ setInterval(()=>{if(!M.Game.active&&!document.getElementById('hugOverlay').class
 }},10000)
 
 // INIT
-S.init();Audio.init();UI.update();M.Water.init();M.Period.checkAndNotify()
+S.init();Audio.init();UI.update();M.Water.init()
+// Ensure period data exists even for old localStorage
+if(!S.get('period')){S.set('period',{history:[],current:null,prefs:{cycleDays:28,flowDays:5,nickname:'',favoriteSnacks:[],comfortFood:[],musicStyle:'gentle',loveLanguage:'words',painLevel:'medium',symptoms:[]},dailyLog:{},carePushed:{}})}
+M.Period.checkAndNotify()
 // Dog3D period gentle mode — gently lerp body toward center
 const _patch3D=setInterval(()=>{
   if(typeof Dog3D==='undefined'||!Dog3D.ready)return
