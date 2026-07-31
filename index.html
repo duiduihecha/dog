@@ -652,7 +652,25 @@ setInterval(()=>{if(!M.Game.active&&!document.getElementById('hugOverlay').class
 
 // INIT
 S.init();Audio.init();UI.update();M.Water.init();M.Period.checkAndNotify()
-// D3 period visual overlay
+// Dog3D period gentle mode — gently lerp body toward center
+const _patch3D=setInterval(()=>{
+  if(typeof Dog3D==='undefined'||!Dog3D.ready)return
+  clearInterval(_patch3D)
+  if(Dog3D.__pp)return;Dog3D.__pp=true
+  const orig=Dog3D.loop
+  Dog3D.loop=function(time){
+    orig&&orig.call(Dog3D,time)
+    // After original loop: gently dampen bounce during period
+    if(M.Period&&M.Period.isInPeriod()&&Dog3D.body){
+      const y=Dog3D.body.position.y
+      Dog3D.body.position.y=y*0.85 // 15% amplitude reduction per frame
+      const s=Dog3D.body.scale
+      if(s){s.x=s.x+(1-s.x)*0.15;s.y=s.y+(1-s.y)*0.15;s.z=s.z+(1-s.z)*0.15}
+    }
+  }
+},300)
+
+// CSS canvas filter as fallback visual indicator
 const _pCheck=setInterval(()=>{const c=document.querySelector('canvas');if(c){c.style.transition='filter .8s';if(M.Period.isInPeriod()){c.style.filter='saturate(.85) brightness(1.02) sepia(.05)';}else{c.style.filter=''}}},1000)
 if(!S.get('onboarded'))setTimeout(()=>M.Onboard.start(),600)
 const last=parseInt(localStorage.getItem('shiba_last_active')||'0'),away=Math.floor((Date.now()-last)/3600000)
