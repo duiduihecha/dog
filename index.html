@@ -83,6 +83,7 @@ body.period-mode{background:color-mix(in srgb,var(--bg) 97%,#e91e63 3%)}
 .todo-item{display:flex;align-items:center;gap:10px;padding:10px 0;font-size:14px;border-bottom:1px solid rgba(0,0,0,.04)}
 .todo-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--pink);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px}
 .todo-check.done{background:var(--pink);color:#fff}
+.period-tab.care-highlight{color:#e91e63;font-weight:700}
 /* Settings */
 .set-group{margin-bottom:16px}
 .set-label{font-size:13px;font-weight:600;margin-bottom:6px;color:var(--text)}
@@ -513,6 +514,7 @@ const M={
       else{status='未设置记录';hint='点击日期开始记录'}
       calHTML='<div style="text-align:center;margin-bottom:8px;font-weight:600">'+status+'</div><div style="text-align:center;font-size:11px;color:var(--sub);margin-bottom:8px">'+hint+'</div>'+calHTML
       calHTML+='<div style="display:flex;gap:8px;margin-top:10px"><button class="big-btn outline" onclick="M.Period._onCalDay(M.Period.todayStr())" style="flex:1;font-size:12px">🩷 标记今天</button><button class="big-btn outline" onclick="M.Period.endPeriod()" style="flex:1;font-size:12px">✅ 结束本期</button></div>'
+      calHTML+='<button class="big-btn outline" onclick="M.Period._showStats()" style="margin-top:8px">📊 查看统计</button>'
       return calHTML
     },
     _onCalDay(ds){const period=S.get('period');if(!period.current||period.current.endDate){period.current={startDate:ds,endDate:null,notes:''};S.set('period',period);FX.toast('🌸 已标记经期开始');UI.update()}else{period.current.endDate=ds;period.history.push({...period.current});period.current=null;S.set('period',period);FX.toast('✅ 本期经期已结束');UI.update()}this.render()},
@@ -543,11 +545,30 @@ const M={
     
     // --- Care ---
     renderCare(){
+      // Daily todo reset
+      const today=this.todayStr(),period=S.get('period'),cp=period.carePushed||{}
+      if(cp._lastTodoReset!==today){const nc={};for(const k in cp)if(!k.startsWith('todo_'))nc[k]=cp[k];nc._lastTodoReset=today;period.carePushed=nc;S.set('period',period)}
+      
       let html='<div class="care-card"><h3>🐕 柴犬对她说</h3><div class="care-msg">'+this.getCareMessage()+'</div>'
       html+='<h3 style="margin-top:12px">💡 今日建议</h3>'+this.getTodayTips().map(t=>'<div class="care-tip">'+t+'</div>').join('')
       html+='<h3 style="margin-top:12px">🎵 推荐做的事</h3>'
-      const actions=['一起看一部温馨的电影 🎬','给她揉揉肚子','准备一杯热红糖姜茶 🍵','帮她捂暖手心和脚心 🤲','放一首她喜欢的歌 🎧','讲一个冷笑话逗她笑','帮她按摩肩膀和后腰 💆','准备一个小惊喜','安静地陪着她 🤗','帮她热一下暖宝宝 🌡️']
-      for(let i=0;i<3;i++)html+='<div class="care-action">✨ '+actions[Math.floor(Math.random()*actions.length)]+'</div>'
+      // Weighted random based on prefs
+      const prefs=S.get('period').prefs,actions=['一起看一部温馨的电影 🎬','给她揉揉肚子','准备一杯热红糖姜茶 🍵','帮她捂暖手心和脚心 🤲','放一首她喜欢的歌 🎧',
+        '讲一个冷笑话逗她笑','帮她按摩肩膀和后腰 💆','准备一个小惊喜','安静地陪着她 🤗','帮她热一下暖宝宝 🌡️']
+      const weights=actions.map(a=>{
+        let w=1;
+        if(prefs.loveLanguage==='gifts'&&a.includes('小惊喜'))w=4;
+        if(prefs.loveLanguage==='acts'&&(a.includes('揉揉')||a.includes('按摩')||a.includes('热一下')))w=3;
+        if(prefs.loveLanguage==='touch'&&(a.includes('陪')||a.includes('捂暖')))w=3;
+        if(prefs.loveLanguage==='words'&&a.includes('笑话'))w=3;
+        return w
+      })
+      const picked=[],pool=[...actions],poolW=[...weights]
+      for(let i=0;i<3&&pool.length;i++){
+        const total=poolW.reduce((a,b)=>a+b,0);let r=Math.random()*total,c=0
+        for(let j=0;j<pool.length;j++){c+=poolW[j];if(r<=c){picked.push(pool[j]);pool.splice(j,1);poolW.splice(j,1);break}}
+      }
+      picked.forEach(a=>{html+='<div class="care-action">✨ '+a+'</div>'})
       html+='</div>'
       
       // Boyfriend view
@@ -568,15 +589,33 @@ const M={
       html+='<div class="set-group"><div class="set-label">经期持续天数</div><input class="set-input" type="number" id="setFlow" value="'+prefs.flowDays+'" onchange="M.Period._saveSet()" style="width:80px"></div>'
       html+='<div class="set-group"><div class="set-label">痛经程度</div><div class="set-radio">'+[{v:'light',t:'轻微'},{v:'medium',t:'中等'},{v:'heavy',t:'较重'}].map(o=>'<label><input type="radio" name="painLevel" value="'+o.v+'" onchange="M.Period._saveSet()" '+(prefs.painLevel===o.v?'checked':'')+'>'+o.t+'</label>').join('')+'</div></div>'
       html+='<div class="set-group"><div class="set-label">常见症状</div><div class="set-tags">'+[{v:'cramps',t:'痛经'},{v:'bloating',t:'腹胀'},{v:'fatigue',t:'疲劳'},{v:'moodSwings',t:'情绪波动'},{v:'headache',t:'头痛'},{v:'backache',t:'腰酸'}].map(o=>'<div class="set-tag'+(prefs.symptoms.includes(o.v)?' selected':'')+'" onclick="M.Period._toggleSymptom(\''+o.v+'\')">'+o.t+'</div>').join('')+'</div></div>'
+      // Favorite snacks
+      const snackTags=['巧克力 🍫','奶茶 🧋','蛋糕 🍰','薯片 🍟','水果捞 🍓','冰淇淋 🍦','红糖水 🍵','热可可 ☕']
+      html+='<div class="set-group"><div class="set-label">喜欢的零食<button class="btn" style="display:inline-block;width:24px;height:24px;font-size:12px;margin-left:6px;vertical-align:middle" onclick="M.Period._addCustomSnack()">+</button></div><div class="set-tags" id="snackTags">'+snackTags.map(s=>'<div class="set-tag'+(prefs.favoriteSnacks.includes(s)?' selected':'')+'" onclick="M.Period._toggleSnack(\''+s+'\')">'+s+'</div>').join('')+'</div></div>'
+      const comfortTags=['姜茶 🫖','红枣粥 🥣','热汤面 🍜','小米粥 🍚','暖宝宝 🌡️','热水袋 🫧']
+      html+='<div class="set-group"><div class="set-label">舒缓食物</div><div class="set-tags">'+comfortTags.map(s=>'<div class="set-tag'+(prefs.comfortFood.includes(s)?' selected':'')+'" onclick="M.Period._toggleComfort(\''+s+'\')">'+s+'</div>').join('')+'</div></div>'
+      html+='<div class="set-group"><div class="set-label">音乐风格</div><div class="set-radio">'+[{v:'gentle',t:'轻柔舒缓 🎻'},{v:'cheery',t:'活泼开心 🎵'},{v:'calm',t:'安静纯音 🎹'}].map(o=>'<label><input type="radio" name="musicStyle" value="'+o.v+'" onchange="M.Period._saveSet()" '+(prefs.musicStyle===o.v?'checked':'')+'>'+o.t+'</label>').join('')+'</div></div>'
       html+='<div class="set-group"><div class="set-label">爱的语言</div><div class="set-radio">'+[{v:'words',t:'暖心话 💬'},{v:'acts',t:'实际行动 💪'},{v:'gifts',t:'小礼物 🎁'},{v:'touch',t:'陪伴就好 🤗'}].map(o=>'<label><input type="radio" name="loveLang" value="'+o.v+'" onchange="M.Period._saveSet()" '+(prefs.loveLanguage===o.v?'checked':'')+'>'+o.t+'</label>').join('')+'</div></div>'
       html+='<button class="big-btn outline" onclick="M.Period._exportData()">📋 导出数据</button>'
       html+='<button class="big-btn danger-btn" onclick="if(confirm(\'确定要删除所有经期数据吗？此操作不可恢复！\'))M.Period._clearData()">🗑 清除所有经期数据</button>'
       return html
     },
-    _saveSet(){const prefs=S.get('period').prefs;const n=document.getElementById('setNick')?.value;if(n!==undefined)prefs.nickname=n;const cy=document.getElementById('setCycle')?.value;if(cy)prefs.cycleDays=parseInt(cy)||28;const fl=document.getElementById('setFlow')?.value;if(fl)prefs.flowDays=parseInt(fl)||5;const pl=document.querySelector('input[name="painLevel"]:checked');if(pl)prefs.painLevel=pl.value;const ll=document.querySelector('input[name="loveLang"]:checked');if(ll)prefs.loveLanguage=ll.value;S.get('period').prefs=prefs;S.save()},
+    _saveSet(){const prefs=S.get('period').prefs;const n=document.getElementById('setNick')?.value;if(n!==undefined)prefs.nickname=n;const cy=document.getElementById('setCycle')?.value;if(cy)prefs.cycleDays=parseInt(cy)||28;const fl=document.getElementById('setFlow')?.value;if(fl)prefs.flowDays=parseInt(fl)||5;const pl=document.querySelector('input[name="painLevel"]:checked');if(pl)prefs.painLevel=pl.value;const ll=document.querySelector('input[name="loveLang"]:checked');if(ll)prefs.loveLanguage=ll.value;const ms=document.querySelector('input[name="musicStyle"]:checked');if(ms)prefs.musicStyle=ms.value;S.get('period').prefs=prefs;S.save()},
+    _toggleSnack(v){const prefs=S.get('period').prefs,s=prefs.favoriteSnacks,i=s.indexOf(v);i>=0?s.splice(i,1):s.push(v);prefs.favoriteSnacks=s;S.get('period').prefs=prefs;S.save();this.render()},
+    _toggleComfort(v){const prefs=S.get('period').prefs,s=prefs.comfortFood,i=s.indexOf(v);i>=0?s.splice(i,1):s.push(v);prefs.comfortFood=s;S.get('period').prefs=prefs;S.save();this.render()},
+    _addCustomSnack(){const v=prompt('添加你喜欢的零食：');if(v&&v.trim()){const prefs=S.get('period').prefs;prefs.favoriteSnacks.push(v.trim());S.get('period').prefs=prefs;S.save();this.render()}},
     _toggleSymptom(v){const prefs=S.get('period').prefs,s=prefs.symptoms,i=s.indexOf(v);i>=0?s.splice(i,1):s.push(v);prefs.symptoms=s;S.get('period').prefs=prefs;S.save();this.render()},
     _exportData(){const data=S.get('period');const a=document.createElement('a');a.href='data:text/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(data,null,2));a.download='period_data_'+this.todayStr()+'.json';a.click();FX.toast('📋 数据已导出')},
     _clearData(){S.set('period',{history:[],current:null,prefs:{cycleDays:28,flowDays:5,nickname:'',favoriteSnacks:[],comfortFood:[],musicStyle:'gentle',loveLanguage:'words',painLevel:'medium',symptoms:[]},dailyLog:{},carePushed:{}});FX.toast('🗑 数据已清除');UI.update();this.render()},
+    _showStats(){const hist=S.get('period').history;if(!hist.length){FX.toast('还没有经期记录');return}
+      const cycles=[];for(let i=1;i<hist.length;i++){const a=new Date(hist[i-1].startDate),b=new Date(hist[i].startDate);cycles.push(Math.round((b-a)/86400000))}
+      const avgCycle=cycles.length?Math.round(cycles.reduce((a,b)=>a+b,0)/cycles.length):0
+      const durations=hist.map(h=>{const s=new Date(h.startDate),e=new Date(h.endDate||h.startDate);return Math.round((e-s)/86400000)+1})
+      const avgDur=Math.round(durations.reduce((a,b)=>a+b,0)/durations.length)
+      let msg='📊 经期统计\n\n📅 共记录 '+hist.length+' 次经期\n🔄 平均周期：'+avgCycle+' 天\n⏱ 平均持续：'+avgDur+' 天'
+      if(hist.length>1)msg+='\n\n最近记录：\n'+hist.slice(-3).map(h=>h.startDate+' → '+(h.endDate||'进行中')).join('\n')
+      FX.modal('📊',msg)
+    },
     
     // --- Render ---
     render(){
@@ -599,10 +638,25 @@ const M={
 }
 
 // IDLE ANIMATION
-setInterval(()=>{if(!M.Game.active&&!document.getElementById('hugOverlay').classList.contains('active')){const db=document.getElementById('dogBase');if(Math.random()<.4){db.classList.add('wag');setTimeout(()=>db.classList.remove('wag'),300);if(Math.random()<.3)FX.bubble(Dialogues.idle[Math.floor(Math.random()*Dialogues.idle.length)])}}},10000)
+setInterval(()=>{if(!M.Game.active&&!document.getElementById('hugOverlay').classList.contains('active')){
+  const db=document.getElementById('dogBase')
+  if(M.Period.isInPeriod()){db.style.transform='scale(1.02)';setTimeout(()=>db.style.transform='',400)}
+  else if(Math.random()<.4){db.classList.add('wag');setTimeout(()=>db.classList.remove('wag'),300);if(Math.random()<.3)FX.bubble(Dialogues.idle[Math.floor(Math.random()*Dialogues.idle.length)])}
+}},10000)
 
 // INIT
 S.init();Audio.init();UI.update();M.Water.init();M.Period.checkAndNotify()
+// Dog3D period patch — gentle mode during period
+const _check3D=setInterval(()=>{if(typeof Dog3D!=='undefined'&&Dog3D.loop){clearInterval(_check3D)
+  const origLoop=Dog3D.loop;Dog3D.loop=function(time){
+    if(M.Period.isInPeriod()&&typeof Dog3D._prevTime!=='undefined')dog.style.transform='none'
+    origLoop.call(this,time)
+  }
+  // Also patch the shiba script's requestAnimationFrame
+  if(typeof Dog3D._origRAF==='undefined'){
+    Dog3D._origRAF=Dog3D.rafFn;Dog3D.rafFn=function(fn){Dog3D._origRAF.call(window,M.Period.isInPeriod()?fn:(t=>{const s=M.Period.isInPeriod()?.6:1;fn(t*s)}))}
+  }
+}},500)
 if(!S.get('onboarded'))setTimeout(()=>M.Onboard.start(),600)
 const last=parseInt(localStorage.getItem('shiba_last_active')||'0'),away=Math.floor((Date.now()-last)/3600000)
 if(away>=2){const n=S.get('dogName')||'柴犬';setTimeout(()=>FX.bubble(n+'一直在等你 💕，你离开了 '+away+' 小时'),1500)}
