@@ -143,6 +143,7 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
 <button class="btn" onclick="M.Audio.toggle()" id="musicBtn">🔊</button>
       <button class="btn" onclick="M.Share.run()" title="分享">🔗</button>
       <button class="btn" onclick="M.Feedback.show()" title="反馈">💬</button>
+      <button class="btn" onclick="M.MusicBox.toggle()" title="点歌台">🎵</button>
 </div>
 <button class="big-btn checkin-btn" id="checkinBtn" onclick="M.Checkin.run()">🎁 每日签到</button>
 <button class="big-btn gacha-btn" onclick="M.Gacha.run()">🎰 抽卡 (5🦴)</button>
@@ -178,6 +179,18 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
 <div style="display:flex;gap:8px;margin-top:10px">
 <button class="polaroid-btn close" onclick="M.Feedback.hide()" style="flex:1">取消</button>
 <button class="polaroid-btn save" onclick="M.Feedback.submit()" style="flex:1">提交 💌</button>
+</div></div></div>
+
+<!-- MUSIC BOX -->
+<div class="modal" id="musicModal" onclick="if(event.target===this)M.MusicBox.hide()">
+<div class="modal-box" style="max-width:340px">
+<h2>🎵 柴犬点歌台</h2>
+<p style="color:var(--sub);font-size:11px;margin:4px 0 12px">选一首，柴犬跟着跳～</p>
+<div id="musicList" style="text-align:left"></div>
+<div id="nowPlaying" style="font-size:11px;color:var(--pink);margin-top:8px;display:none"></div>
+<div style="display:flex;gap:8px;justify-content:center;margin-top:10px">
+<button class="polaroid-btn close" onclick="M.MusicBox.stop()" style="flex:1">⏹ 停止</button>
+<button class="polaroid-btn close" onclick="M.MusicBox.hide()" style="flex:1">关闭</button>
 </div></div></div>
 
 <!-- POLAROID -->
@@ -728,6 +741,71 @@ const M={
       if(navigator.share){navigator.share({title:'我的柴犬',text:text}).catch(()=>{})}
       else{navigator.clipboard.writeText(text).then(()=>FX.toast('🔗 链接已复制，发给她吧！')).catch(()=>{})}
     },
+  },
+  MusicBox:{
+    ctx:null, timer:null, playing:false, current:null,
+    songs:[
+      {name:'小星星',bpm:120,color:'#e91e63',notes:[
+        [523,0.5],[523,0.5],[784,0.5],[784,0.5],[880,0.5],[880,0.5],[784,1],
+        [698,0.5],[698,0.5],[659,0.5],[659,0.5],[587,0.5],[587,0.5],[523,1],
+        [784,0.5],[784,0.5],[698,0.5],[698,0.5],[659,0.5],[659,0.5],[587,1],
+        [784,0.5],[784,0.5],[698,0.5],[698,0.5],[659,0.5],[659,0.5],[587,1],
+        [523,0.5],[523,0.5],[784,0.5],[784,0.5],[880,0.5],[880,0.5],[784,1],
+        [698,0.5],[698,0.5],[659,0.5],[659,0.5],[587,0.5],[587,0.5],[523,1]
+      ]},
+      {name:'生日快乐',bpm:100,color:'#f59e0b',notes:[
+        [523,0.5],[523,0.5],[587,1],[523,1],[698,1],[659,2],
+        [523,0.5],[523,0.5],[587,1],[523,1],[784,1],[698,2],
+        [523,0.5],[523,0.5],[1047,1],[880,1],[698,1],[659,1],[587,2],
+        [932,0.5],[932,0.5],[880,1],[698,1],[784,1],[698,2]
+      ]},
+      {name:'欢乐颂',bpm:130,color:'#7c4dff',notes:[
+        [659,0.5],[659,0.5],[698,0.5],[784,0.5],[784,0.5],[698,0.5],[659,0.5],[587,0.5],[523,0.5],[523,0.5],[587,0.5],[659,0.5],[659,1.5],
+        [659,0.5],[659,0.5],[698,0.5],[784,0.5],[784,0.5],[698,0.5],[659,0.5],[587,0.5],[523,0.5],[523,0.5],[587,0.5],[659,0.5],[587,1.5]
+      ]},
+    ],
+    toggle(){document.getElementById('musicModal').classList.contains('show')?this.hide():this.show()},
+    show(){
+      document.getElementById('musicModal').classList.add('show')
+      const list=this.songs.map((s,i)=>`<div onclick="M.MusicBox.play(${i})" style="padding:10px 12px;margin:4px 0;background:var(--bg);border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:14px"><span style="font-size:20px">🎶</span><span>${s.name}</span></div>`).join('')
+      document.getElementById('musicList').innerHTML=list
+    },
+    hide(){document.getElementById('musicModal').classList.remove('show')},
+    play(idx){
+      this.stop()
+      const song=this.songs[idx], BPM=song.bpm, beatMs=60000/BPM
+      document.getElementById('nowPlaying').style.display='block'
+      document.getElementById('nowPlaying').textContent='🎶 正在播放：'+song.name
+      this.playing=true;this.current=idx
+      if(!this.ctx)this.ctx=new(window.AudioContext||window.webkitAudioContext)()
+      if(this.ctx.state==='suspended')this.ctx.resume()
+      let t=0,step=0
+      const dog=document.getElementById('dogBase'), ctx=this.ctx
+      const playNote=()=>{
+        if(!this.playing)return
+        if(step>=song.notes.length){this.danceDog(false);return}
+        const [freq,dur]=song.notes[step], ms=dur*beatMs
+        // Play note
+        const o=ctx.createOscillator(),g=ctx.createGain()
+        o.connect(g);g.connect(ctx.destination)
+        o.type='triangle';o.frequency.value=freq
+        g.gain.setValueAtTime(.08,ctx.currentTime)
+        g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+ms/1000)
+        o.start();o.stop(ctx.currentTime+ms/1000+.05)
+        step++
+        this.danceDog(true, song.color)
+        this.timer=setTimeout(playNote, ms)
+      }
+      playNote()
+      // Dog dance rhythm
+      this._danceTimer=setInterval(()=>{if(this.playing)this.danceDog(true,song.color)}, beatMs)
+    },
+    danceDog(on,color){
+      const dog=document.getElementById('dogBase')
+      if(on){dog.style.transform='scale(1.08) rotate('+(Math.random()*10-5)+'deg)';dog.style.filter='drop-shadow(0 0 12px '+(color||'#e91e63')+')';setTimeout(()=>{if(this.playing)dog.style.transform='scale(1) rotate(0)';dog.style.filter=''},150)}
+      else{dog.style.transform='';dog.style.filter=''}
+    },
+    stop(){this.playing=false;clearTimeout(this.timer);clearInterval(this._danceTimer);this.danceDog(false);document.getElementById('nowPlaying').style.display='none'},
   },
   Polaroid:{open(){const pd=document.getElementById('pDog');const snap=(typeof Dog3D!=='undefined'&&Dog3D.ready)?Dog3D.snapshot():'';if(snap)pd.innerHTML='<img class="dog-photo" src="'+snap+'">';document.getElementById('pMsg').textContent=Dialogues.polaroid_msgs[Math.floor(Math.random()*Dialogues.polaroid_msgs.length)];const n=new Date();document.getElementById('pDate').textContent=n.getFullYear()+'.'+(n.getMonth()+1)+'.'+n.getDate()+' #柴犬拍立得';document.getElementById('polaroidOverlay').classList.add('active')},close(){document.getElementById('polaroidOverlay').classList.remove('active')},share(){
   const msg=document.getElementById('pMsg').textContent,date=document.getElementById('pDate').textContent
