@@ -198,7 +198,10 @@ body.period-mode{background:color-mix(in srgb,var(--bg) 97%,#e91e63 3%)}
 <div class="page" id="pagePeriod">
 <div class="period-header">
   <div class="period-title" id="periodTitle">🌸 经期关怀</div>
-  <div class="period-status" id="periodStatus">未设置</div>
+  <div style="display:flex;gap:6px;align-items:center">
+    <div class="period-status" id="periodStatus">未设置</div>
+    <button class="btn" style="width:28px;height:28px;font-size:14px" onclick="M.Period._showGuide()" title="使用说明">❓</button>
+  </div>
 </div>
 <div class="period-tabs">
   <div class="period-tab active" onclick="M.Period.switchTab('cal')">📅 日历</div>
@@ -616,6 +619,9 @@ const M={
       if(hist.length>1)msg+='\n\n最近记录：\n'+hist.slice(-3).map(h=>h.startDate+' → '+(h.endDate||'进行中')).join('\n')
       FX.modal('📊',msg)
     },
+    _showGuide(){
+      FX.modal('📖','🌸 经期关怀使用指南\n\n📅 日历：点击日期标记经期开始/结束，粉色=经期日，浅粉=预测日\n📝 记录：每天记录心情和不适程度，底部有7天趋势图\n💕 关怀：经期中柴犬会变温柔，70%对话变暖心话；男友待办每天刷新\n⚙ 设置：昵称/周期/症状/零食偏好，所有数据只存在本地\n\n🐕 经期中柴犬会更温柔、小纸条会换成专属文案、背景变微粉\n🚨 首页🌸按钮自动提示（♡=经期中，!=即将来）')
+    },
     
     // --- Render ---
     render(){
@@ -646,17 +652,8 @@ setInterval(()=>{if(!M.Game.active&&!document.getElementById('hugOverlay').class
 
 // INIT
 S.init();Audio.init();UI.update();M.Water.init();M.Period.checkAndNotify()
-// Dog3D period patch — gentle mode during period
-const _check3D=setInterval(()=>{if(typeof Dog3D!=='undefined'&&Dog3D.loop){clearInterval(_check3D)
-  const origLoop=Dog3D.loop;Dog3D.loop=function(time){
-    if(M.Period.isInPeriod()&&typeof Dog3D._prevTime!=='undefined')dog.style.transform='none'
-    origLoop.call(this,time)
-  }
-  // Also patch the shiba script's requestAnimationFrame
-  if(typeof Dog3D._origRAF==='undefined'){
-    Dog3D._origRAF=Dog3D.rafFn;Dog3D.rafFn=function(fn){Dog3D._origRAF.call(window,M.Period.isInPeriod()?fn:(t=>{const s=M.Period.isInPeriod()?.6:1;fn(t*s)}))}
-  }
-}},500)
+// D3 period visual overlay
+const _pCheck=setInterval(()=>{const c=document.querySelector('canvas');if(c){c.style.transition='filter .8s';if(M.Period.isInPeriod()){c.style.filter='saturate(.85) brightness(1.02) sepia(.05)';}else{c.style.filter=''}}},1000)
 if(!S.get('onboarded'))setTimeout(()=>M.Onboard.start(),600)
 const last=parseInt(localStorage.getItem('shiba_last_active')||'0'),away=Math.floor((Date.now()-last)/3600000)
 if(away>=2){const n=S.get('dogName')||'柴犬';setTimeout(()=>FX.bubble(n+'一直在等你 💕，你离开了 '+away+' 小时'),1500)}
