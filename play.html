@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>宁城打弹子</title></head>
+<body style="text-align:center;padding-top:40vh;font-family:sans-serif">
+<p>🎴 正在跳转到游戏...</p>
+<script>
+fetch('https://duiduihecha.github.io/dog/play.json')
+  .then(r=>r.json()).then(d=>location.replace(d.url))
+  .catch(()=>location.replace('https://duiduihecha.github.io/dog/'))
+</script>
+</body></html>
