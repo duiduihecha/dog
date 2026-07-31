@@ -144,6 +144,7 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
       <button class="btn" onclick="M.Share.run()" title="分享">🔗</button>
       <button class="btn" onclick="M.Feedback.show()" title="反馈">💬</button>
       <button class="btn" onclick="M.MusicBox.toggle()" title="点歌台">🎵</button>
+      <button class="btn" onclick="M.Water.drink()" title="喝水提醒">💧</button>
 </div>
 <button class="big-btn checkin-btn" id="checkinBtn" onclick="M.Checkin.run()">🎁 每日签到</button>
 <button class="big-btn gacha-btn" onclick="M.Gacha.run()">🎰 抽卡 (5🦴)</button>
@@ -742,6 +743,31 @@ const M={
       else{navigator.clipboard.writeText(text).then(()=>FX.toast('🔗 链接已复制，发给她吧！')).catch(()=>{})}
     },
   },
+  Water:{
+    count:0, timer:null,
+    drink(){
+      this.count++;S.add('affection',1)
+      Audio.happy()
+      const msgs=[
+        '🐕 柴犬喝了水，你也喝一口吧 💧','吨吨吨～柴犬喝完啦，该你了！','柴犬说：记得喝水哦 🥤',
+        '狗狗喝了，你呢？💦','柴犬提醒：每天8杯水！','咕噜咕噜～一起喝水吧 🐕💧'
+      ]
+      FX.bubble(msgs[this.count%msgs.length]);FX.hearts(4);UI.update()
+      clearTimeout(this.timer)
+      // Auto-remind in 1.5 hours
+      this.timer=setTimeout(()=>{
+        const h=new Date().getHours()
+        if(h>=8&&h<22)FX.bubble('💧 柴犬渴了…你也该喝水啦！')
+      },5400000)
+    },
+    init(){
+      // First reminder after 2 hours
+      setTimeout(()=>{
+        const h=new Date().getHours()
+        if(h>=8&&h<22)FX.toast('💧 柴犬提醒：该喝水啦！点 💧 一起喝')
+      },7200000)
+    },
+  },
   MusicBox:{
     ctx:null, timer:null, playing:false, current:null,
     songs:[
@@ -864,7 +890,7 @@ const M={
 setInterval(()=>{if(!M.Game.active&&!document.getElementById('hugOverlay').classList.contains('active')){const db=document.getElementById('dogBase');if(Math.random()<.4){db.classList.add('wag');setTimeout(()=>db.classList.remove('wag'),300);if(Math.random()<.3)FX.bubble(Dialogues.idle[Math.floor(Math.random()*Dialogues.idle.length)])}}},10000)
 
 // INIT
-S.init();Audio.init();UI.update();Dog3D.init()
+S.init();Audio.init();UI.update();M.Water.init();Dog3D.init()
 if(!S.get('onboarded'))setTimeout(()=>M.Onboard.start(),600)
 // Welcome back
 const last=parseInt(localStorage.getItem('shiba_last_active')||'0'),away=Math.floor((Date.now()-last)/3600000)
