@@ -128,6 +128,10 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
 <div class="mood-text" id="moodText"></div>
 <div class="hint" id="hugHint" style="font-size:11px;color:var(--sub);text-align:center;margin-top:2px">长按柴犬 2 秒，给它一个抱抱 🤗</div>
 <div class="bubble" id="bubbleEl"></div>
+<div class="countdown-bar" id="countdownBar" style="background:linear-gradient(90deg,#667eea,#e91e63);border-radius:10px;padding:10px 16px;margin:8px 0;text-align:center;color:#fff;font-size:13px;font-weight:600;display:none">
+  ⏰ 距离下班还有 <span id="countdownTime">--</span>
+  <div style="font-size:10px;opacity:.8;margin-top:2px" id="countdownMsg"></div>
+</div>
 <div class="stats"><div class="stat">❤️ <span class="stat-v" id="sAffection">0</span></div><div class="stat">🦴 <span class="stat-v" id="sTreats">3</span></div><div class="stat">📅 <span class="stat-v" id="sDays">1</span>天</div><div class="stat">🔥 <span class="stat-v" id="sStreak">1</span></div></div>
 <div class="actions">
 <button class="btn" onclick="M.Feed.run(event)"><span class="badge" id="treatBadge">3</span>🍖</button>
@@ -673,6 +677,30 @@ const M={
     },
   },
   Audio:{toggle(){Audio.toggle()}},
+  Countdown:{
+    endHour:18, endMin:0,
+    update(){
+      const now=new Date(), end=new Date(now)
+      end.setHours(this.endHour,this.endMin,0,0)
+      if(now>=end){end.setDate(end.getDate()+1)}
+      const diff=end-now, h=Math.floor(diff/3600000), m=Math.floor((diff%3600000)/60000)
+      const bar=document.getElementById('countdownBar'), timeEl=document.getElementById('countdownTime'), msgEl=document.getElementById('countdownMsg')
+      if(h>=12){bar.style.display='none';return}
+      bar.style.display='block'
+      timeEl.textContent=h+'小时'+m+'分钟'
+      const msgs=[
+        {max:30,text:'🎉 马上就能下班啦！再坚持一下！'},
+        {max:60,text:'💪 最后一小时！胜利在望！'},
+        {max:120,text:'☕ 快到啦，喝杯水歇一歇'},
+        {max:240,text:'💼 下午过半，稳住节奏'},
+        {max:480,text:'☀️ 认真工作的人最棒了'},
+        {max:999,text:'🌅 新的一天，柴犬陪你'}
+      ]
+      const remain=m+h*60, msg=msgs.find(x=>remain<=x.max)||msgs[msgs.length-1]
+      msgEl.textContent=msg.text
+    },
+    init(){this.update();setInterval(()=>this.update(),60000)}
+  },
   Rename:{
     show(){
       const name=S.get('dogName')||'柴犬'
@@ -749,7 +777,7 @@ const M={
 setInterval(()=>{if(!M.Game.active&&!document.getElementById('hugOverlay').classList.contains('active')){const db=document.getElementById('dogBase');if(Math.random()<.4){db.classList.add('wag');setTimeout(()=>db.classList.remove('wag'),300);if(Math.random()<.3)FX.bubble(Dialogues.idle[Math.floor(Math.random()*Dialogues.idle.length)])}}},10000)
 
 // INIT
-S.init();Audio.init();UI.update();Dog3D.init()
+S.init();Audio.init();UI.update();M.Countdown.init();Dog3D.init()
 if(!S.get('onboarded'))setTimeout(()=>M.Onboard.start(),600)
 // Welcome back
 const last=parseInt(localStorage.getItem('shiba_last_active')||'0'),away=Math.floor((Date.now()-last)/3600000)
