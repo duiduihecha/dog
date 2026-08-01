@@ -275,7 +275,7 @@ window.FEEDBACK_URL = '';
 window.SYNC_URL = 'https://loose-gifts-care.loca.lt/sync';
 const S={key:'shiba_v6',d:null,
   init(){this.d=JSON.parse(localStorage.getItem(this.key)||'{"treats":3,"affection":0,"level":0,"pets":0,"days":1,"streak":1,"lastCheckin":"","equipped":{},"collection":{},"highScore":0,"firstOpen":"'+new Date().toISOString()+'","music":true,"owned":{},"onboarded":false,"dogName":"柴犬","breedLock":false,"pairCode":"","role":"she","period":{"history":[],"current":null,"prefs":{"cycleDays":28,"flowDays":5,"nickname":"","favoriteSnacks":[],"comfortFood":[],"musicStyle":"gentle","loveLanguage":"words","painLevel":"medium","symptoms":[]},"dailyLog":{},"carePushed":{}}}');this.save()},
-  save(){localStorage.setItem(this.key,JSON.stringify(this.d))},
+  save(){try{localStorage.setItem(this.key,JSON.stringify(this.d));return true}catch(e){console.warn('S.save:',e.message);return false}},
   get(k){return this.d[k]},set(k,v){this.d[k]=v;this.save()},add(k,n){this.d[k]=(this.d[k]||0)+n;this.save()},
 }
 
@@ -318,9 +318,9 @@ const UI={
     // Period mode body class
     document.getElementById('body').classList.toggle('period-mode',M.Period.isInPeriod())
     const ct=document.getElementById('careTab');if(ct)ct.classList.toggle('care-highlight',M.Period.isInPeriod())
-    // Period mode dialogue weighting
     UI.updateAccessories()
   },
+  updateAccessories(){},
 }
 
 // ==================== INPUT ====================
@@ -542,8 +542,8 @@ const M={
       document.getElementById('modalMsg').innerHTML=html
       document.getElementById('modalEl').classList.add('show')
     },
-    _doStartPeriod(ds){const period=S.get('period');period.current={startDate:ds,endDate:null,notes:''};S.set('period',period);M.Sync.push('period',{isInPeriod:true,daysIntoPeriod:1,startDate:ds});FX.toast('🌸 已标记经期开始');UI.update();this.render();document.getElementById('modalEl').classList.remove('show')},
-    _doEndPeriod(ds){const period=S.get('period');if(period.current&&!period.current.endDate){period.current.endDate=ds;const _ps=period.current.startDate;period.history.push({...period.current});period.current=null;S.set('period',period);M.Sync.push('period',{isInPeriod:false,startDate:_ps,endDate:ds});FX.toast('✅ 本期经期已结束')}else{FX.toast('没有进行中的经期')}UI.update();this.render();document.getElementById('modalEl').classList.remove('show')},
+    _doStartPeriod(ds){const period=S.get('period');period.current={startDate:ds,endDate:null,notes:''};S.set('period',period);M.Sync.push('period',{isInPeriod:true,daysIntoPeriod:1,startDate:ds});this.render();try{UI.update()}catch(e){};FX.toast('🌸 已标记经期开始');document.getElementById('modalEl').classList.remove('show')},
+    _doEndPeriod(ds){const period=S.get('period');if(period.current&&!period.current.endDate){period.current.endDate=ds;const _ps=period.current.startDate;period.history.push({...period.current});period.current=null;S.set('period',period);M.Sync.push('period',{isInPeriod:false,startDate:_ps,endDate:ds});this.render();try{UI.update()}catch(e){};FX.toast('✅ 本期经期已结束')}else{FX.toast('没有进行中的经期');this.render()}document.getElementById('modalEl').classList.remove('show')},
     endPeriod(){if(S.get('period').current&&!S.get('period').current.endDate){this._doEndPeriod(this.todayStr())}},
     
     // --- Log ---
@@ -680,7 +680,7 @@ setInterval(()=>{if(!M.Game.active&&!document.getElementById('hugOverlay').class
 }},10000)
 
 // INIT
-S.init();Audio.init();UI.update();M.Water.init()
+S.init();Audio.init();try{UI.update()}catch(e){console.warn('UI.update init:',e.message)};M.Water.init()
 // Ensure period data exists even for old localStorage
 if(!S.get('period')){S.set('period',{history:[],current:null,prefs:{cycleDays:28,flowDays:5,nickname:'',favoriteSnacks:[],comfortFood:[],musicStyle:'gentle',loveLanguage:'words',painLevel:'medium',symptoms:[]},dailyLog:{},carePushed:{}})}
 if(!S.get('pairCode'))S.set('pairCode','')
