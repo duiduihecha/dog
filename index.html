@@ -615,8 +615,7 @@ const M={
     
     // --- Settings ---
     renderSet(){
-      renderSet(){
-            const prefs=S.get('period').prefs
+      const prefs=S.get('period').prefs
             let html='<div style="background:#fff5f5;border:2px dashed #ffcdd2;border-radius:12px;padding:12px;margin-bottom:16px"><div style="font-weight:700;margin-bottom:4px">🔗 配对设置</div><div style="font-size:11px;color:var(--sub);margin-bottom:8px">设置一次即可，配对后请勿修改</div>'
             html+='<input class="set-input" id="setPC" value="'+(S.get('pairCode')||'')+'" placeholder="和对方填一样的码" oninput="M.Period._saveSet()" style="margin-bottom:8px">'
             html+='<div class="set-radio"><label><input type="radio" name="role" value="me" onchange="M.Period._saveSet()" '+(S.get('role')==='me'?'checked':'')+'>我 👤</label><label><input type="radio" name="role" value="she" onchange="M.Period._saveSet()" '+(S.get('role')!=='me'?'checked':'')+'>雪 🌸</label></div></div>'
@@ -635,7 +634,7 @@ const M={
             html+='<button class="big-btn outline" onclick="M.Period._exportData()">📋 导出数据</button>'
             html+='<button class="big-btn danger-btn" onclick="if(confirm(\'确定要删除所有经期数据吗？此操作不可恢复！\'))M.Period._clearData()">🗑 清除所有经期数据</button>'
             return html
-          },
+    },
     _saveSet(){const prefs=S.get('period').prefs;const n=document.getElementById('setNick')?.value;if(n!==undefined)prefs.nickname=n;const cy=document.getElementById('setCycle')?.value;if(cy)prefs.cycleDays=parseInt(cy)||28;const fl=document.getElementById('setFlow')?.value;if(fl)prefs.flowDays=parseInt(fl)||5;const pl=document.querySelector('input[name="painLevel"]:checked');if(pl)prefs.painLevel=pl.value;const ll=document.querySelector('input[name="loveLang"]:checked');if(ll)prefs.loveLanguage=ll.value;const ms=document.querySelector('input[name="musicStyle"]:checked');if(ms)prefs.musicStyle=ms.value;const pc=document.getElementById('setPC')?.value;if(pc!==undefined)S.set('pairCode',pc);const rl=document.querySelector("input[name='role']:checked");if(rl)S.set("role",rl.value);S.get('period').prefs=prefs;S.save()},
     _toggleSnack(v){const prefs=S.get('period').prefs,s=prefs.favoriteSnacks,i=s.indexOf(v);i>=0?s.splice(i,1):s.push(v);prefs.favoriteSnacks=s;S.get('period').prefs=prefs;S.save();this.render()},
     _toggleComfort(v){const prefs=S.get('period').prefs,s=prefs.comfortFood,i=s.indexOf(v);i>=0?s.splice(i,1):s.push(v);prefs.comfortFood=s;S.get('period').prefs=prefs;S.save();this.render()},
