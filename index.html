@@ -552,13 +552,13 @@ const M={
       let html='<div style="text-align:center;font-weight:600;margin-bottom:10px">'+today+'</div>'
       html+='<div class="set-label">今日心情</div><div class="mood-row">'+['😭','😢','😐','🙂','😄'].map((e,i)=>'<div class="mood-btn'+(entry.mood===i+1?' selected':'')+'" onclick="M.Period._logMood('+(i+1)+')">'+e+'</div>').join('')+'</div>'
       html+='<div class="set-label">身体不适</div><div class="pain-row">'+['无痛','轻微','明显','难受','剧烈'].map((l,i)=>'<div class="pain-btn'+(entry.pain===i?' selected':'')+'" onclick="M.Period._logPain('+i+')">'+l+'</div>').join('')+'</div>'
-      html+='<div class="set-label">经血量</div><div class="pain-row">'+[{v:1,t:'少🩸'},{v:2,t:'适中🩸🩸'},{v:3,t:'偏多🩸🩸🩸'},{v:4,t:'很多🩸🩸🩸🩸'}].map(o=>'<div class="pain-btn'+(entry.flow===o.v?' selected':'')+'" onclick="M.Period._logFlow('+o.v+')">'+o.t+'</div>').join('')+'</div>'
+      html+='<div class="set-label">经血量</div><div class="pain-row" id="flowRow">'+[{v:1,t:'少🩸'},{v:2,t:'适中🩸🩸'},{v:3,t:'偏多🩸🩸🩸'},{v:4,t:'很多🩸🩸🩸🩸'}].map(o=>'<div class="pain-btn'+(entry.flow===o.v?' selected':'')+'" onclick="M.Period._logFlow('+o.v+')">'+o.t+'</div>').join('')+'</div>'
       html+='<input class="set-input" id="logNote" value="'+(entry.note||'')+'" placeholder="备注（选填）" style="margin-top:8px">'
       html+='<button class="big-btn" onclick="M.Period._saveLog()" style="margin-top:8px">💾 保存</button>'
       html+=this._miniChart()
       return html
     },
-    _logFlow(v){this._logCache=this._logCache||{};this._logCache.flow=v;document.querySelectorAll('.pain-row').forEach((b,i)=>{if(b.textContent.includes('🩸'))b.classList.toggle('selected',b.textContent.startsWith(['','少','适中','偏多','很多'][v]))})},
+    _logFlow(v){this._logCache=this._logCache||{};this._logCache.flow=v;document.querySelectorAll('#flowRow .pain-btn').forEach((b,i)=>b.classList.toggle('selected',i+1===v))},
     _logMood(v){this._logCache=this._logCache||{};this._logCache.mood=v;document.querySelectorAll('.mood-btn').forEach((b,i)=>b.classList.toggle('selected',i+1===v))},
     _logPain(v){this._logCache=this._logCache||{};this._logCache.pain=v;document.querySelectorAll('.pain-btn').forEach((b,i)=>b.classList.toggle('selected',i===v))},
     _saveLog(){const note=document.getElementById('logNote')?.value||'';const cache=this._logCache||{},today=this.todayStr(),log=S.get('period').dailyLog||{},old=log[today]||{};log[today]={mood:cache.mood||old.mood||0,pain:cache.pain!==undefined?cache.pain:old.pain||0,flow:cache.flow||old.flow||0,note};S.get('period').dailyLog=log;S.save();M.Sync.push('mood',{date:today,mood:log[today].mood,pain:log[today].pain,note});FX.toast('💾 已保存');this._logCache={};this.render()},
