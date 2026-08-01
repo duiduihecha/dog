@@ -683,6 +683,8 @@ setInterval(()=>{if(!M.Game.active&&!document.getElementById('hugOverlay').class
 S.init();Audio.init();UI.update();M.Water.init()
 // Ensure period data exists even for old localStorage
 if(!S.get('period')){S.set('period',{history:[],current:null,prefs:{cycleDays:28,flowDays:5,nickname:'',favoriteSnacks:[],comfortFood:[],musicStyle:'gentle',loveLanguage:'words',painLevel:'medium',symptoms:[]},dailyLog:{},carePushed:{}})}
+if(!S.get('pairCode'))S.set('pairCode','')
+if(!S.get('role'))S.set('role','she')
 M.Period.checkAndNotify()
 // Dog3D period gentle mode — gently lerp body toward center
 const _patch3D=setInterval(()=>{
