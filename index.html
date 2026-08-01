@@ -680,11 +680,13 @@ setInterval(()=>{if(!M.Game.active&&!document.getElementById('hugOverlay').class
 }},10000)
 
 // INIT
-S.init();Audio.init();try{UI.update()}catch(e){console.warn('UI.update init:',e.message)};M.Water.init()
-// Ensure period data exists even for old localStorage
-if(!S.get('period')){S.set('period',{history:[],current:null,prefs:{cycleDays:28,flowDays:5,nickname:'',favoriteSnacks:[],comfortFood:[],musicStyle:'gentle',loveLanguage:'words',painLevel:'medium',symptoms:[]},dailyLog:{},carePushed:{}})}
-if(!S.get('pairCode'))S.set('pairCode','')
-if(!S.get('role'))S.set('role','she')
+S.init();Audio.init()
+// Ensure required keys exist BEFORE any UI/module init
+if(S.get('period')===undefined)S.set('period',{history:[],current:null,prefs:{cycleDays:28,flowDays:5,nickname:'',favoriteSnacks:[],comfortFood:[],musicStyle:'gentle',loveLanguage:'words',painLevel:'medium',symptoms:[]},dailyLog:{},carePushed:{}})
+if(S.get('pairCode')===undefined)S.set('pairCode','')
+if(S.get('role')===undefined)S.set('role','she')
+try{UI.update()}catch(e){console.warn('UI.update init:',e.message)}
+M.Water.init()
 M.Period.checkAndNotify()
 // Dog3D period gentle mode — gently lerp body toward center
 const _patch3D=setInterval(()=>{
